@@ -63,15 +63,30 @@
 
             .maze-cell {
                 aspect-ratio: 1 / 1;
+                min-width: 0;
+                overflow: hidden;
                 border: 1.5px solid #cbd5e1;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 font-weight: 700;
                 color: #1e293b;
+                line-height: 1;
+                font-variant-numeric: tabular-nums;
                 cursor: pointer;
                 transition: background-color 0.2s, transform 0.1s, color 0.2s;
                 position: relative;
+            }
+
+            @media (max-width: 639px) {
+                .board-arrow-start-2 {
+                    right: 0 !important;
+                    transform: none !important;
+                }
+                .board-arrow-end-2 {
+                    left: 0 !important;
+                    transform: none !important;
+                }
             }
 
             .maze-cell:hover:not(.is-visited) {
@@ -156,6 +171,8 @@
 
             .a4-maze-cell {
                 aspect-ratio: 1 / 1;
+                min-width: 0;
+                overflow: hidden;
                 border: 0.75px solid #cbd5e1;
                 display: flex;
                 align-items: center;
@@ -272,7 +289,10 @@
             </div>
             
             <!-- Kółka z liczbami 2-12 -->
-            <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 text-left">Wybierz mnożniki (1 lub 2 liczby)</div>
+            <div class="flex flex-wrap items-center justify-between gap-1 mb-2 text-left">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Wybierz mnożniki (1 lub 2 liczby)</span>
+                <span class="text-[11px] font-medium text-slate-400">Kliknij wybraną liczbę, aby ją odznaczyć</span>
+            </div>
             <div id="factor-buttons" class="grid grid-cols-6 gap-2 sm:gap-2.5 max-w-lg mx-auto mb-5">
                 <!-- Generowane przez JS -->
             </div>
@@ -372,23 +392,32 @@
             <!-- Kontener planszy ze strzałkami -->
             <div class="relative w-full flex flex-col items-center justify-center my-1">
                 
-                <!-- Górna strefa strzałki dla Trasy 2 (Prawy górny róg - wejście z góry) -->
-                <div id="arrow-start-2-row" class="relative w-full max-w-[540px] h-9">
-                    <div id="arrow-start-2" class="hidden absolute bottom-1 translate-x-1/2 flex flex-col items-center arrow-indicator-y" title="Start Trasy 2">
-                        <span id="label-start-2" class="text-[10px] sm:text-xs font-extrabold text-slate-800 bg-white/90 px-1.5 rounded border border-slate-300 leading-tight mb-0.5 whitespace-nowrap">START</span>
-                        <svg id="svg-start-2" class="w-6 h-6 sm:w-7 sm:h-7" viewBox="0 0 24 24" fill="currentColor" stroke="#1e293b" stroke-width="1.5">
+                <!-- Górna strefa strzałek (Mobile: Start 1 po lewej + Start 2 po prawej; Desktop: Start 2 nad rogiem) -->
+                <div id="arrow-start-2-row" class="relative w-full max-w-[540px] h-9 sm:h-10">
+                    <!-- Mobile START 1 nad lewym górnym polem -->
+                    <div id="arrow-start-1-mobile" class="flex sm:hidden absolute bottom-1 left-0 items-center gap-1 arrow-indicator-y" title="Start Trasy 1">
+                        <span id="label-start-1-mobile" class="text-[10px] font-extrabold text-slate-800 bg-white/95 px-1.5 py-0.5 rounded border border-slate-300 leading-tight whitespace-nowrap">START</span>
+                        <svg id="svg-start-1-mobile" class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="currentColor" stroke="#1e293b" stroke-width="1.5">
+                            <path d="M9 4h6v10h4l-7 7-7-7h4V4z"/>
+                        </svg>
+                    </div>
+
+                    <!-- START 2 (Prawy górny róg - wejście z góry) -->
+                    <div id="arrow-start-2" class="hidden board-arrow-start-2 absolute bottom-1 sm:translate-x-1/2 flex flex-row sm:flex-col items-center gap-1 sm:gap-0 arrow-indicator-y" title="Start Trasy 2">
+                        <span id="label-start-2" class="text-[10px] sm:text-xs font-extrabold text-slate-800 bg-white/95 px-1.5 py-0.5 sm:py-0 rounded border border-slate-300 leading-tight sm:mb-0.5 whitespace-nowrap">START</span>
+                        <svg id="svg-start-2" class="w-5 h-5 sm:w-7 sm:h-7 shrink-0" viewBox="0 0 24 24" fill="currentColor" stroke="#1e293b" stroke-width="1.5">
                             <path d="M9 4h6v10h4l-7 7-7-7h4V4z"/>
                         </svg>
                     </div>
                 </div>
 
-                <!-- Środkowy rząd: Strzałka Start 1 | Plansza | Strzałka Meta 1 -->
-                <div class="relative w-full flex items-center justify-center px-14 sm:px-20">
+                <!-- Środkowy rząd: Strzałka Start 1 (Desktop) | Plansza | Strzałka Meta 1 (Desktop) -->
+                <div class="relative w-full flex items-center justify-center px-0 sm:px-24">
                     <div id="game-board-wrapper" class="relative w-full max-w-[540px]">
-                        <!-- Strzałka START 1 (Lewy górny róg) -->
-                        <div id="arrow-start-1" class="absolute -translate-y-1/2 z-10 arrow-indicator-x flex items-center gap-1 whitespace-nowrap" style="right: calc(100% + 6px); top: 5%;" title="Start Trasy 1">
-                            <span id="label-start-1" class="text-[10px] sm:text-xs font-extrabold text-slate-800 bg-white/90 px-1.5 py-0.5 rounded border border-slate-300 leading-tight">START</span>
-                            <svg id="svg-start-1" class="w-6 h-6 sm:w-8 sm:h-8 shrink-0" viewBox="0 0 24 24" fill="currentColor" stroke="#1e293b" stroke-width="1.5">
+                        <!-- Strzałka START 1 (Lewy górny róg - Desktop/Tablet) -->
+                        <div id="arrow-start-1" class="hidden sm:flex absolute -translate-y-1/2 z-10 arrow-indicator-x items-center gap-1 whitespace-nowrap" style="right: calc(100% + 6px); top: 5%;" title="Start Trasy 1">
+                            <span id="label-start-1" class="text-xs font-extrabold text-slate-800 bg-white/95 px-1.5 py-0.5 rounded border border-slate-300 leading-tight">START</span>
+                            <svg id="svg-start-1" class="w-7 h-7 md:w-8 md:h-8 shrink-0" viewBox="0 0 24 24" fill="currentColor" stroke="#1e293b" stroke-width="1.5">
                                 <path d="M4 9h10V5l7 7-7 7v-4H4V9z"/>
                             </svg>
                         </div>
@@ -398,23 +427,32 @@
                             <!-- Komórki generowane przez JS -->
                         </div>
 
-                        <!-- Strzałka META 1 (Prawy dolny róg) -->
-                        <div id="arrow-end-1" class="absolute translate-y-1/2 z-10 arrow-indicator-x flex items-center gap-1 whitespace-nowrap" style="left: calc(100% + 6px); bottom: 5%;" title="Meta Trasy 1">
-                            <svg id="svg-end-1" class="w-6 h-6 sm:w-8 sm:h-8 shrink-0" viewBox="0 0 24 24" fill="currentColor" stroke="#1e293b" stroke-width="1.5">
+                        <!-- Strzałka META 1 (Prawy dolny róg - Desktop/Tablet) -->
+                        <div id="arrow-end-1" class="hidden sm:flex absolute translate-y-1/2 z-10 arrow-indicator-x items-center gap-1 whitespace-nowrap" style="left: calc(100% + 6px); bottom: 5%;" title="Meta Trasy 1">
+                            <svg id="svg-end-1" class="w-7 h-7 md:w-8 md:h-8 shrink-0" viewBox="0 0 24 24" fill="currentColor" stroke="#1e293b" stroke-width="1.5">
                                 <path d="M4 9h10V5l7 7-7 7v-4H4V9z"/>
                             </svg>
-                            <span id="label-end-1" class="text-[10px] sm:text-xs font-extrabold text-slate-800 bg-white/90 px-1.5 py-0.5 rounded border border-slate-300 leading-tight">META</span>
+                            <span id="label-end-1" class="text-xs font-extrabold text-slate-800 bg-white/95 px-1.5 py-0.5 rounded border border-slate-300 leading-tight">META</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Dolna strefa strzałki dla Trasy 2 (Lewy dolny róg - wyjście w dół) -->
-                <div id="arrow-end-2-row" class="relative w-full max-w-[540px] h-9">
-                    <div id="arrow-end-2" class="hidden absolute top-1 -translate-x-1/2 flex flex-col items-center arrow-indicator-y" title="Meta Trasy 2">
-                        <svg id="svg-end-2" class="w-6 h-6 sm:w-7 sm:h-7" viewBox="0 0 24 24" fill="currentColor" stroke="#1e293b" stroke-width="1.5">
+                <!-- Dolna strefa strzałek (Mobile: Meta 2 po lewej + Meta 1 po prawej; Desktop: Meta 2 pod rogiem) -->
+                <div id="arrow-end-2-row" class="relative w-full max-w-[540px] h-9 sm:h-10">
+                    <!-- META 2 (Lewy dolny róg - wyjście w dół) -->
+                    <div id="arrow-end-2" class="hidden board-arrow-end-2 absolute top-1 sm:-translate-x-1/2 flex flex-row sm:flex-col items-center gap-1 sm:gap-0 arrow-indicator-y" title="Meta Trasy 2">
+                        <svg id="svg-end-2" class="w-5 h-5 sm:w-7 sm:h-7 shrink-0" viewBox="0 0 24 24" fill="currentColor" stroke="#1e293b" stroke-width="1.5">
                             <path d="M9 4h6v10h4l-7 7-7-7h4V4z"/>
                         </svg>
-                        <span id="label-end-2" class="text-[10px] sm:text-xs font-extrabold text-slate-800 bg-white/90 px-1.5 rounded border border-slate-300 leading-tight mt-0.5 whitespace-nowrap">META</span>
+                        <span id="label-end-2" class="text-[10px] sm:text-xs font-extrabold text-slate-800 bg-white/95 px-1.5 py-0.5 sm:py-0 rounded border border-slate-300 leading-tight sm:mt-0.5 whitespace-nowrap">META</span>
+                    </div>
+
+                    <!-- Mobile META 1 pod prawym dolnym polem -->
+                    <div id="arrow-end-1-mobile" class="flex sm:hidden absolute top-1 right-0 items-center gap-1 arrow-indicator-y" title="Meta Trasy 1">
+                        <svg id="svg-end-1-mobile" class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="currentColor" stroke="#1e293b" stroke-width="1.5">
+                            <path d="M9 4h6v10h4l-7 7-7-7h4V4z"/>
+                        </svg>
+                        <span id="label-end-1-mobile" class="text-[10px] font-extrabold text-slate-800 bg-white/95 px-1.5 py-0.5 rounded border border-slate-300 leading-tight whitespace-nowrap">META</span>
                     </div>
                 </div>
 
@@ -553,11 +591,15 @@
                         <!-- 3. Jakie liczby i zakres -->
                         <div id="a4-numbers-section" class="bg-white border border-slate-200 rounded-2xl p-3 flex flex-col gap-3">
                             <div>
-                                <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center justify-between mb-1">
                                     <span class="text-xs font-bold uppercase tracking-wider text-slate-500">3. Jakie liczby?</span>
                                     <span id="a4-factors-hint" class="text-[11px] font-semibold text-slate-400">1 lub 2 mnożniki</span>
                                 </div>
+                                <p class="text-[11px] text-slate-400 mb-2">Kliknij zaznaczoną liczbę, aby ją odznaczyć i wybrać inną.</p>
                                 <div id="a4-factor-buttons" class="grid grid-cols-6 gap-1.5">
+                                    <!-- Generowane przez JS -->
+                                </div>
+                                <div id="a4-active-slots" class="flex flex-wrap items-center gap-1.5 mt-2">
                                     <!-- Generowane przez JS -->
                                 </div>
                             </div>
@@ -680,7 +722,8 @@
             // --- KONFIGURACJA I STAN GRY ---
             let gridSize = 10;              // 4, 5, 6, 8, 10 lub 12
             let isTwoPlayerMode = false;    // Tryb 1 gracza lub 2 graczy
-            let selectedFactors = [7];      // Tablica 1 lub 2 wybranych liczb
+            let factorSlots = [7, null];    // Sloty wyboru liczb [Gracz1/Trasa1, Gracz2/Trasa2]
+            let selectedFactors = [7];      // Aktywna tablica 1 lub 2 wybranych liczb w bieżącej grze
             let rangeMin = 1;               // Dolna granica zakresu liczb na planszy
             let rangeMax = 200;             // Górna granica zakresu liczb na planszy
             let trackColors = [COLOR_PALETTE[0], COLOR_PALETTE[1]]; // Kolor Trasy 1 i Trasy 2
@@ -758,6 +801,32 @@
             const btnMode1P = document.getElementById('mode-1p');
             const btnMode2P = document.getElementById('mode-2p');
 
+            function getActiveFactorsFromSlots(slots, twoPlayers) {
+                if (twoPlayers) {
+                    return (slots[0] !== null && slots[1] !== null) ? [slots[0], slots[1]] : [];
+                }
+                return slots.filter(v => v !== null);
+            }
+
+            function toggleFactorSlot(slots, num, twoPlayers) {
+                if (slots[0] === num) {
+                    if (!twoPlayers && slots[1] !== null) {
+                        slots[0] = slots[1];
+                        slots[1] = null;
+                    } else {
+                        slots[0] = null;
+                    }
+                } else if (slots[1] === num) {
+                    slots[1] = null;
+                } else if (slots[0] === null) {
+                    slots[0] = num;
+                } else if (slots[1] === null) {
+                    slots[1] = num;
+                } else {
+                    slots[1] = num;
+                }
+            }
+
             function setGameMode(twoPlayers) {
                 isTwoPlayerMode = twoPlayers;
                 const rulesText = document.getElementById('rules-text');
@@ -766,14 +835,17 @@
                     btnMode2P.className = 'py-2 px-2.5 rounded-xl font-bold text-xs sm:text-sm bg-indigo-600 text-white shadow-sm transition-all';
                     btnMode1P.className = 'py-2 px-2.5 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all';
                     rulesText.innerHTML = '<strong>Gracz 1</strong> steruje klawiszami <strong>W A S D X</strong>, a <strong>Gracz 2</strong> używa <strong>Strzałek</strong> (możecie też klikać pola). Obie trasy muszą dotrzeć do swoich strzałek wyjściowych!';
-                    if (selectedFactors.length < 2) {
-                        const secondFactor = selectedFactors[0] === 4 ? 6 : 4;
-                        selectedFactors.push(secondFactor);
+                    if (factorSlots[0] !== null && factorSlots[1] === null) {
+                        factorSlots[1] = factorSlots[0] === 4 ? 6 : 4;
                     }
                 } else {
                     btnMode1P.className = 'py-2 px-2.5 rounded-xl font-bold text-xs sm:text-sm bg-indigo-600 text-white shadow-sm transition-all';
                     btnMode2P.className = 'py-2 px-2.5 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all';
                     rulesText.innerHTML = 'Łącz sąsiadujące krawędziami pola od strzałki <strong>Start</strong> do <strong>Meta</strong> (bez ruchów na skos). Możesz klikać pola lub używać klawiszy strzałek / WASDX.';
+                    if (factorSlots[0] === null && factorSlots[1] !== null) {
+                        factorSlots[0] = factorSlots[1];
+                        factorSlots[1] = null;
+                    }
                 }
                 updateSetupUI();
             }
@@ -801,19 +873,7 @@
             });
 
             function handleFactorSelect(num) {
-                const idx = selectedFactors.indexOf(num);
-                if (idx !== -1) {
-                    const minAllowed = isTwoPlayerMode ? 2 : 1;
-                    if (selectedFactors.length > minAllowed) {
-                        selectedFactors.splice(idx, 1);
-                    }
-                } else {
-                    if (selectedFactors.length < 2) {
-                        selectedFactors.push(num);
-                    } else {
-                        selectedFactors[1] = num;
-                    }
-                }
+                toggleFactorSlot(factorSlots, num, isTwoPlayerMode);
                 updateSetupUI();
             }
 
@@ -838,12 +898,12 @@
                     btn.style.borderColor = '';
                     btn.style.boxShadow = '';
 
-                    if (selectedFactors[0] === val) {
+                    if (factorSlots[0] === val) {
                         btn.classList.add('active-selected');
                         btn.style.background = c1.main;
                         btn.style.borderColor = c1.dark;
                         btn.style.boxShadow = `0 6px 14px ${c1.main}55`;
-                    } else if (selectedFactors[1] === val) {
+                    } else if (factorSlots[1] === val) {
                         btn.classList.add('active-selected');
                         btn.style.background = c2.main;
                         btn.style.borderColor = c2.dark;
@@ -851,22 +911,28 @@
                     }
                 });
 
-                // Renderowanie selektorów kolorów dla wybranych liczb
+                // Renderowanie selektorów kolorów oraz statusu slotów dla wybranych liczb
                 const colorContainer = document.getElementById('color-pickers-container');
                 colorContainer.innerHTML = '';
 
-                selectedFactors.forEach((factor, idx) => {
+                const slotsToRender = isTwoPlayerMode
+                    ? [0, 1]
+                    : (factorSlots[1] !== null ? [0, 1] : [0]);
+
+                slotsToRender.forEach(idx => {
+                    const factor = factorSlots[idx];
                     const currentColor = trackColors[idx];
-                    const labelText = isTwoPlayerMode 
-                        ? `Gracz ${idx + 1} (×${factor})` 
-                        : `Trasa ${idx + 1} (×${factor})`;
+                    const roleName = isTwoPlayerMode ? `Gracz ${idx + 1}` : `Trasa ${idx + 1}`;
+                    const labelText = factor !== null
+                        ? `${roleName} (×${factor})`
+                        : `${roleName}: wybierz liczbę`;
 
                     const box = document.createElement('div');
-                    box.className = 'bg-slate-50 border border-slate-200/90 rounded-2xl px-3.5 py-2.5 flex flex-col items-center gap-1.5 flex-1';
+                    box.className = `rounded-2xl px-3.5 py-2.5 flex flex-col items-center gap-1.5 flex-1 border ${factor !== null ? 'bg-slate-50 border-slate-200/90' : 'bg-amber-50/70 border-amber-300 border-dashed'}`;
                     
                     const title = document.createElement('div');
-                    title.className = 'text-xs font-bold text-slate-700 flex items-center gap-1.5';
-                    title.innerHTML = `<span class="w-3 h-3 rounded-full inline-block" style="background:${currentColor.main}"></span> ${labelText}`;
+                    title.className = `text-xs font-bold flex items-center gap-1.5 ${factor !== null ? 'text-slate-700' : 'text-amber-800'}`;
+                    title.innerHTML = `<span class="w-3 h-3 rounded-full inline-block shrink-0" style="background:${currentColor.main}"></span> ${labelText}`;
                     box.appendChild(title);
 
                     const swatches = document.createElement('div');
@@ -886,6 +952,17 @@
                     box.appendChild(swatches);
                     colorContainer.appendChild(box);
                 });
+
+                const activeFactors = getActiveFactorsFromSlots(factorSlots, isTwoPlayerMode);
+                const startBtn = document.getElementById('btn-start-game');
+                if (activeFactors.length === 0) {
+                    startBtn.disabled = true;
+                    startBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                } else {
+                    startBtn.disabled = false;
+                    startBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    selectedFactors = activeFactors;
+                }
             }
             updateSetupUI();
 
@@ -899,26 +976,39 @@
             }
 
             // --- GENERATOR LABIRYNTU (BEZSTANOWY, 1 LUB 2 TRASY, ROZMIAR 4x4 - 12x12) ---
-            function generatePathForSize(size, startR, startC, endR, endC) {
+            function trySingleDFSPath(size, startR, startC, endR, endC, avoidSet = null, maxSharedRun = 2) {
                 let path = [];
                 let visited = Array.from({ length: size }, () => Array(size).fill(false));
+                let ops = 0;
+                const maxOps = size * size * 18;
 
-                function dfs(r, c) {
+                const baseDirs = [
+                    { dr: 0, dc: 1 },
+                    { dr: 1, dc: 0 },
+                    { dr: 0, dc: -1 },
+                    { dr: -1, dc: 0 }
+                ];
+
+                function dfs(r, c, sharedRun) {
+                    if (++ops > maxOps) return false;
                     path.push({ r, c });
                     visited[r][c] = true;
 
                     if (r === endR && c === endC) return true;
 
-                    const dirs = [
-                        { dr: 0, dc: 1 },
-                        { dr: 1, dc: 0 },
-                        { dr: 0, dc: -1 },
-                        { dr: -1, dc: 0 }
-                    ];
-
+                    const dirs = [...baseDirs];
                     for (let i = dirs.length - 1; i > 0; i--) {
                         const j = Math.floor(Math.random() * (i + 1));
                         [dirs[i], dirs[j]] = [dirs[j], dirs[i]];
+                    }
+
+                    // W trybie 2 tras lekko preferuj komórki nienależące do pierwszej trasy
+                    if (avoidSet && Math.random() < 0.8) {
+                        dirs.sort((a, b) => {
+                            const aAvoid = avoidSet.has(`${r + a.dr},${c + a.dc}`) ? 1 : 0;
+                            const bAvoid = avoidSet.has(`${r + b.dr},${c + b.dc}`) ? 1 : 0;
+                            return aAvoid - bAvoid;
+                        });
                     }
 
                     for (let { dr, dc } of dirs) {
@@ -926,8 +1016,12 @@
                         const nc = c + dc;
 
                         if (nr >= 0 && nr < size && nc >= 0 && nc < size && !visited[nr][nc]) {
+                            const isShared = avoidSet ? avoidSet.has(`${nr},${nc}`) : false;
+                            const nextSharedRun = isShared ? sharedRun + 1 : 0;
+                            if (avoidSet && nextSharedRun > maxSharedRun) continue;
+
                             let adjacentVisitedCount = 0;
-                            for (let cd of dirs) {
+                            for (let cd of baseDirs) {
                                 const ar = nr + cd.dr;
                                 const ac = nc + cd.dc;
                                 if (ar >= 0 && ar < size && ac >= 0 && ac < size && visited[ar][ac]) {
@@ -935,7 +1029,7 @@
                                 }
                             }
                             if (adjacentVisitedCount <= 1) {
-                                if (dfs(nr, nc)) return true;
+                                if (dfs(nr, nc, nextSharedRun)) return true;
                             }
                         }
                     }
@@ -945,8 +1039,103 @@
                     return false;
                 }
 
-                dfs(startR, startC);
+                const initShared = avoidSet && avoidSet.has(`${startR},${startC}`) ? 1 : 0;
+                const ok = dfs(startR, startC, initShared);
+                return ok ? path : [];
+            }
+
+            function buildFallbackPath(size, startR, startC, endR, endC) {
+                const path = [];
+                if (startR === 0 && startC === 0) {
+                    // (0,0) -> (0, size-2) -> (size-1, size-2) -> (size-1, size-1)
+                    for (let c = 0; c <= size - 2; c++) path.push({ r: 0, c });
+                    for (let r = 1; r <= size - 1; r++) path.push({ r, c: size - 2 });
+                    path.push({ r: size - 1, c: size - 1 });
+                } else {
+                    // (0, size-1) -> (size-2, size-1) -> (size-2, 0) -> (size-1, 0)
+                    for (let r = 0; r <= size - 2; r++) path.push({ r, c: size - 1 });
+                    for (let c = size - 2; c >= 0; c--) path.push({ r: size - 2, c });
+                    path.push({ r: size - 1, c: 0 });
+                }
                 return path;
+            }
+
+            function generatePathForSize(size, startR, startC, endR, endC, avoidSet = null, maxSharedRun = 2, maxRetries = 40) {
+                for (let attempt = 0; attempt < maxRetries; attempt++) {
+                    const p = trySingleDFSPath(size, startR, startC, endR, endC, avoidSet, maxSharedRun);
+                    if (p.length > 0 && p[0].r === startR && p[0].c === startC && p[p.length - 1].r === endR && p[p.length - 1].c === endC) {
+                        return p;
+                    }
+                }
+                return avoidSet ? [] : buildFallbackPath(size, startR, startC, endR, endC);
+            }
+
+            function hasTooManyConsecutiveShared(pathA, pathB, maxConsecutive = 2) {
+                const setB = new Set(pathB.map(p => `${p.r},${p.c}`));
+                let run = 0;
+                for (const p of pathA) {
+                    if (setB.has(`${p.r},${p.c}`)) {
+                        run++;
+                        if (run > maxConsecutive) return true;
+                    } else {
+                        run = 0;
+                    }
+                }
+                return false;
+            }
+
+            function pickPathValue(pool, prevVals, nextVals, usageCount) {
+                if (pool.length === 1) {
+                    const only = pool[0];
+                    usageCount.set(only, (usageCount.get(only) || 0) + 1);
+                    return only;
+                }
+
+                const countRunIfChosen = (val) => {
+                    let left = 0;
+                    for (let i = prevVals.length - 1; i >= 0; i--) {
+                        if (prevVals[i] === val) left++;
+                        else break;
+                    }
+                    let right = 0;
+                    for (let i = 0; i < nextVals.length; i++) {
+                        if (nextVals[i] === val) right++;
+                        else break;
+                    }
+                    return left + 1 + right;
+                };
+
+                const prev1 = prevVals.length > 0 ? prevVals[prevVals.length - 1] : null;
+                const prev2 = prevVals.length > 1 ? prevVals[prevVals.length - 2] : null;
+                const next1 = nextVals.length > 0 ? nextVals[0] : null;
+                const next2 = nextVals.length > 1 ? nextVals[1] : null;
+
+                // Preferuj brak powtórzeń z poprzednimi/następnymi, a bezwzględnie pilnuj <= 3 pod rząd
+                let candidates = pool.filter(v => v !== prev1 && v !== next1 && v !== prev2 && v !== next2);
+                if (candidates.length === 0) {
+                    candidates = pool.filter(v => v !== prev1 && v !== next1);
+                }
+                if (candidates.length === 0) {
+                    candidates = pool.filter(v => countRunIfChosen(v) <= 2);
+                }
+                if (candidates.length === 0) {
+                    candidates = pool.filter(v => countRunIfChosen(v) <= 3);
+                }
+                if (candidates.length === 0) {
+                    candidates = pool;
+                }
+
+                // Lekko promuj rzadziej używane wielokrotności dla większej różnorodności na trasie
+                let minUsed = Infinity;
+                for (const v of candidates) {
+                    const u = usageCount.get(v) || 0;
+                    if (u < minUsed) minUsed = u;
+                }
+                const balanced = candidates.filter(v => (usageCount.get(v) || 0) <= minUsed + 1);
+                const finalPool = balanced.length > 0 ? balanced : candidates;
+                const chosen = finalPool[Math.floor(Math.random() * finalPool.length)];
+                usageCount.set(chosen, (usageCount.get(chosen) || 0) + 1);
+                return chosen;
             }
 
             function normalizeRange(rawMin, rawMax) {
@@ -965,22 +1154,38 @@
                 const f2 = isDual ? factors[1] : null;
                 const { min: lo, max: hi } = normalizeRange(minVal, maxVal);
 
-                const sol1 = generatePathForSize(size, 0, 0, size - 1, size - 1);
+                let sol1 = [];
                 let sol2 = [];
 
-                if (isDual) {
-                    let attempts = 0;
-                    while (attempts < 60) {
-                        const candidate = generatePathForSize(size, 0, size - 1, size - 1, 0);
-                        const touchesCorners = candidate.some(p => (p.r === 0 && p.c === 0) || (p.r === size - 1 && p.c === size - 1));
-                        if (!touchesCorners && candidate.length > 0) {
-                            sol2 = candidate;
-                            break;
-                        }
-                        attempts++;
+                if (!isDual) {
+                    sol1 = generatePathForSize(size, 0, 0, size - 1, size - 1, null, 2, 60);
+                    if (sol1.length === 0) {
+                        sol1 = buildFallbackPath(size, 0, 0, size - 1, size - 1);
                     }
-                    if (sol2.length === 0) {
-                        sol2 = generatePathForSize(size, 0, size - 1, size - 1, 0);
+                } else {
+                    outer:
+                    for (let outerAttempt = 0; outerAttempt < 40; outerAttempt++) {
+                        const cand1 = generatePathForSize(size, 0, 0, size - 1, size - 1, null, 2, 15);
+                        if (cand1.length === 0) continue;
+                        const set1 = new Set(cand1.map(p => `${p.r},${p.c}`));
+
+                        for (let innerAttempt = 0; innerAttempt < 20; innerAttempt++) {
+                            const cand2 = trySingleDFSPath(size, 0, size - 1, size - 1, 0, set1, 2);
+                            if (cand2.length === 0) continue;
+                            const touchesCorners = cand2.some(p => (p.r === 0 && p.c === 0) || (p.r === size - 1 && p.c === size - 1));
+                            if (touchesCorners) continue;
+                            if (hasTooManyConsecutiveShared(cand1, cand2, 2)) continue;
+                            if (hasTooManyConsecutiveShared(cand2, cand1, 2)) continue;
+
+                            sol1 = cand1;
+                            sol2 = cand2;
+                            break outer;
+                        }
+                    }
+
+                    if (sol1.length === 0 || sol2.length === 0) {
+                        sol1 = buildFallbackPath(size, 0, 0, size - 1, size - 1);
+                        sol2 = buildFallbackPath(size, 0, size - 1, size - 1, 0);
                     }
                 }
 
@@ -1027,30 +1232,61 @@
                     }
                 }
 
-                const data = Array.from({ length: size }, () => Array(size).fill(0));
+                const pure1 = isDual ? mult1.filter(x => x % f2 !== 0) : mult1;
+                const pool1 = pure1.length > 0 ? pure1 : mult1;
+                const pure2 = isDual ? mult2.filter(x => x % f1 !== 0) : [];
+                const pool2 = pure2.length > 0 ? pure2 : mult2;
 
+                const data = Array.from({ length: size }, () => Array(size).fill(0));
+                const setP1 = new Set(sol1.map(p => `${p.r},${p.c}`));
+                const setP2 = new Set(sol2.map(p => `${p.r},${p.c}`));
+                const usage1 = new Map();
+                const usage2 = new Map();
+
+                // 1. Wypełnij Trasa 1 sekwencyjnie (łącznie ze skrzyżowaniami z Trasą 2)
+                for (let i = 0; i < sol1.length; i++) {
+                    const { r, c } = sol1[i];
+                    const isShared = isDual && setP2.has(`${r},${c}`);
+                    const prevVals = [];
+                    for (let k = Math.max(0, i - 3); k < i; k++) {
+                        prevVals.push(data[sol1[k].r][sol1[k].c]);
+                    }
+                    const pool = isShared ? commonMults : pool1;
+                    data[r][c] = pickPathValue(pool, prevVals, [], usage1);
+                }
+
+                // 2. Wypełnij Trasa 2 sekwencyjnie, omijając już przypisane skrzyżowania
+                if (isDual) {
+                    for (let j = 0; j < sol2.length; j++) {
+                        const { r, c } = sol2[j];
+                        if (setP1.has(`${r},${c}`)) {
+                            const existing = data[r][c];
+                            usage2.set(existing, (usage2.get(existing) || 0) + 1);
+                            continue;
+                        }
+                        const prevVals = [];
+                        for (let k = Math.max(0, j - 3); k < j; k++) {
+                            prevVals.push(data[sol2[k].r][sol2[k].c]);
+                        }
+                        const nextVals = [];
+                        for (let k = j + 1; k < Math.min(sol2.length, j + 4); k++) {
+                            const vNext = data[sol2[k].r][sol2[k].c];
+                            if (vNext > 0) nextVals.push(vNext);
+                            else break;
+                        }
+                        data[r][c] = pickPathValue(pool2, prevVals, nextVals, usage2);
+                    }
+                }
+
+                // 3. Wypełnij pozostałe pola poza trasami
                 for (let r = 0; r < size; r++) {
                     for (let c = 0; c < size; c++) {
-                        const inP1 = sol1.some(p => p.r === r && p.c === c);
-                        const inP2 = isDual && sol2.some(p => p.r === r && p.c === c);
-
-                        if (inP1 && inP2) {
-                            data[r][c] = commonMults[Math.floor(Math.random() * commonMults.length)];
-                        } else if (inP1) {
-                            const pure1 = isDual ? mult1.filter(x => x % f2 !== 0) : mult1;
-                            const pool = pure1.length > 0 ? pure1 : mult1;
-                            data[r][c] = pool[Math.floor(Math.random() * pool.length)];
-                        } else if (inP2) {
-                            const pure2 = mult2.filter(x => x % f1 !== 0);
-                            const pool = pure2.length > 0 ? pure2 : mult2;
-                            data[r][c] = pool[Math.floor(Math.random() * pool.length)];
+                        if (data[r][c] !== 0) continue;
+                        if (Math.random() < 0.1) {
+                            const trapPool = isDual && Math.random() < 0.5 ? mult2 : mult1;
+                            data[r][c] = trapPool[Math.floor(Math.random() * trapPool.length)];
                         } else {
-                            if (Math.random() < 0.1) {
-                                const trapPool = isDual && Math.random() < 0.5 ? mult2 : mult1;
-                                data[r][c] = trapPool[Math.floor(Math.random() * trapPool.length)];
-                            } else {
-                                data[r][c] = nonMultiples[Math.floor(Math.random() * nonMultiples.length)];
-                            }
+                            data[r][c] = nonMultiples[Math.floor(Math.random() * nonMultiples.length)];
                         }
                     }
                 }
@@ -1069,6 +1305,26 @@
                 solutionPath2 = instance.solutionPath2;
             }
 
+            function fitBoardTypography() {
+                const board = document.getElementById('maze-board');
+                if (!board || document.getElementById('game-screen').classList.contains('hidden')) return;
+                const w = board.clientWidth;
+                if (!w || !gridData || gridData.length === 0) return;
+
+                let maxDigits = 1;
+                for (let r = 0; r < gridSize; r++) {
+                    for (let c = 0; c < gridSize; c++) {
+                        const len = String(gridData[r][c]).length;
+                        if (len > maxDigits) maxDigits = len;
+                    }
+                }
+
+                const cellWidth = w / gridSize;
+                const ratio = maxDigits >= 3 ? 0.36 : (maxDigits === 2 ? 0.46 : 0.54);
+                const fontSize = Math.max(9.5, Math.min(36, Math.round(cellWidth * ratio * 10) / 10));
+                board.style.fontSize = `${fontSize}px`;
+            }
+
             // --- RENDEROWANIE PLANSZY (DYNAMICZNE KOLORY I ROZMIAR) ---
             function renderBoard() {
                 const board = document.getElementById('maze-board');
@@ -1076,28 +1332,23 @@
                 const topArrowRow = document.getElementById('arrow-start-2-row');
                 const bottomArrowRow = document.getElementById('arrow-end-2-row');
                 board.innerHTML = '';
-                board.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+                board.style.gridTemplateColumns = `repeat(${gridSize}, minmax(0, 1fr))`;
 
-                let maxWidthClass = 'max-w-[540px]';
-                let fontClass = 'text-lg sm:text-2xl md:text-3xl';
+                let maxWidthClass = 'max-w-[580px]';
                 if (gridSize <= 5) {
                     maxWidthClass = 'max-w-[440px]';
-                    fontClass = 'text-2xl sm:text-4xl';
                 } else if (gridSize === 6) {
                     maxWidthClass = 'max-w-[480px]';
-                    fontClass = 'text-xl sm:text-3xl';
                 } else if (gridSize === 8) {
-                    maxWidthClass = 'max-w-[520px]';
-                    fontClass = 'text-xl sm:text-3xl';
+                    maxWidthClass = 'max-w-[540px]';
                 } else if (gridSize === 12) {
-                    maxWidthClass = 'max-w-[560px]';
-                    fontClass = 'text-sm sm:text-xl md:text-2xl';
+                    maxWidthClass = 'max-w-[640px]';
                 }
 
                 boardWrapper.className = `relative w-full ${maxWidthClass}`;
-                topArrowRow.className = `relative w-full ${maxWidthClass} h-10`;
-                bottomArrowRow.className = `relative w-full ${maxWidthClass} h-10`;
-                board.className = `maze-grid w-full ${fontClass}`;
+                topArrowRow.className = `relative w-full ${maxWidthClass} h-9 sm:h-10`;
+                bottomArrowRow.className = `relative w-full ${maxWidthClass} h-9 sm:h-10`;
+                board.className = 'maze-grid w-full';
 
                 // Wyśrodkowanie strzałek względem skrajnych komórek dla każdego rozmiaru planszy
                 const edgeOffsetPct = (50 / gridSize).toFixed(2);
@@ -1176,6 +1427,8 @@
                         board.appendChild(cellDiv);
                     }
                 }
+                fitBoardTypography();
+                requestAnimationFrame(fitBoardTypography);
             }
 
             // --- LOGIKA RUCHU (KLIKNIĘCIA + KLAWIATURA WASDX ORAZ STRZAŁKI) ---
@@ -1471,6 +1724,9 @@
 
             // --- ROZPOCZĘCIE I ZAKOŃCZENIE GRY ---
             function startNewGame() {
+                const activeFactors = getActiveFactorsFromSlots(factorSlots, isTwoPlayerMode);
+                if (activeFactors.length === 0) return;
+                selectedFactors = activeFactors;
                 syncSetupRangeFromInputs();
                 document.getElementById('setup-modal').classList.add('hidden');
                 document.getElementById('victory-modal').classList.add('hidden');
@@ -1480,13 +1736,17 @@
                 const c1 = trackColors[0];
                 const c2 = trackColors[1];
 
-                // Kolorowanie strzałek SVG oraz przypisanie mnożników przy START i META
+                // Kolorowanie strzałek SVG oraz przypisanie mnożników przy START i META (desktop + mobile)
                 document.getElementById('svg-start-1').style.color = c1.main;
                 document.getElementById('svg-end-1').style.color = c1.main;
+                document.getElementById('svg-start-1-mobile').style.color = c1.main;
+                document.getElementById('svg-end-1-mobile').style.color = c1.main;
                 document.getElementById('svg-start-2').style.color = c2.main;
                 document.getElementById('svg-end-2').style.color = c2.main;
                 document.getElementById('label-start-1').textContent = `START ×${selectedFactors[0]}`;
                 document.getElementById('label-end-1').textContent = `META ×${selectedFactors[0]}`;
+                document.getElementById('label-start-1-mobile').textContent = `START ×${selectedFactors[0]}`;
+                document.getElementById('label-end-1-mobile').textContent = `META ×${selectedFactors[0]}`;
                 if (isDual) {
                     document.getElementById('label-start-2').textContent = `START ×${selectedFactors[1]}`;
                     document.getElementById('label-end-2').textContent = `META ×${selectedFactors[1]}`;
@@ -1763,6 +2023,7 @@
                 blankMode: false,
                 players: 1,
                 gridSize: 10,
+                factorSlots: [7, null],
                 factors: [7],
                 rangeMin: 1,
                 rangeMax: 200,
@@ -1807,51 +2068,65 @@
                 return `<span class="${sizeClass} tracking-[1px] leading-none select-none" title="Poziom trudności: ${count}/5"><span class="text-slate-500">${filled}</span><span class="text-slate-300">${empty}</span></span>`;
             }
 
-            function handleA4FactorSelect(num) {
-                const idx = worksheetConfig.factors.indexOf(num);
-                if (idx !== -1) {
-                    const minAllowed = worksheetConfig.players === 2 ? 2 : 1;
-                    if (worksheetConfig.factors.length > minAllowed) {
-                        worksheetConfig.factors.splice(idx, 1);
-                    }
-                } else {
-                    if (worksheetConfig.factors.length < 2) {
-                        worksheetConfig.factors.push(num);
-                    } else {
-                        worksheetConfig.factors[1] = num;
-                    }
+            function syncA4FactorsFromSlots() {
+                const active = getActiveFactorsFromSlots(worksheetConfig.factorSlots, worksheetConfig.players === 2);
+                if (active.length > 0) {
+                    worksheetConfig.factors = active;
+                    return true;
                 }
-                regenerateWorksheets();
+                return false;
+            }
+
+            function handleA4FactorSelect(num) {
+                toggleFactorSlot(worksheetConfig.factorSlots, num, worksheetConfig.players === 2);
+                if (syncA4FactorsFromSlots()) {
+                    regenerateWorksheets();
+                }
                 updateA4UI();
             }
 
             function setA4Players(count) {
                 worksheetConfig.players = count;
-                if (count === 2 && worksheetConfig.factors.length < 2) {
-                    const second = worksheetConfig.factors[0] === 4 ? 6 : 4;
-                    worksheetConfig.factors.push(second);
+                if (count === 2) {
+                    if (worksheetConfig.factorSlots[0] !== null && worksheetConfig.factorSlots[1] === null) {
+                        worksheetConfig.factorSlots[1] = worksheetConfig.factorSlots[0] === 4 ? 6 : 4;
+                    }
+                } else {
+                    if (worksheetConfig.factorSlots[0] === null && worksheetConfig.factorSlots[1] !== null) {
+                        worksheetConfig.factorSlots[0] = worksheetConfig.factorSlots[1];
+                        worksheetConfig.factorSlots[1] = null;
+                    }
                 }
-                regenerateWorksheets();
+                if (syncA4FactorsFromSlots()) {
+                    regenerateWorksheets();
+                }
                 updateA4UI();
             }
 
             function setA4GridSize(size) {
                 worksheetConfig.gridSize = size;
-                regenerateWorksheets();
+                if (syncA4FactorsFromSlots() || worksheetConfig.blankMode) {
+                    regenerateWorksheets();
+                }
                 updateA4UI();
             }
 
             function setA4BoardsPerPage(count) {
                 worksheetConfig.boardsPerPage = count;
-                while (generatedWorksheets.length < count) {
-                    generatedWorksheets.push(
-                        createMazeInstance(worksheetConfig.gridSize, worksheetConfig.factors, worksheetConfig.rangeMin, worksheetConfig.rangeMax)
-                    );
+                if (syncA4FactorsFromSlots() || worksheetConfig.blankMode) {
+                    while (generatedWorksheets.length < count) {
+                        generatedWorksheets.push(
+                            createMazeInstance(worksheetConfig.gridSize, worksheetConfig.factors, worksheetConfig.rangeMin, worksheetConfig.rangeMax)
+                        );
+                    }
                 }
                 updateA4UI();
             }
 
             function regenerateWorksheets() {
+                if (!worksheetConfig.blankMode && !syncA4FactorsFromSlots()) {
+                    return;
+                }
                 const count = worksheetConfig.boardsPerPage;
                 generatedWorksheets = [];
                 for (let i = 0; i < count; i++) {
@@ -1880,8 +2155,11 @@
             function getA4CellFontSizePx(size, boardsCount, fillWide) {
                 const boardMM = getA4BoardWidthMM(boardsCount, fillWide, worksheetConfig.players === 2);
                 const cellPx = (boardMM * 3.7795) / size;
-                const ratio = size <= 5 ? 0.44 : (size <= 8 ? 0.48 : 0.50);
-                return Math.max(7.5, Math.min(26, Math.round(cellPx * ratio * 10) / 10));
+                const maxDigits = worksheetConfig.blankMode ? 2 : (worksheetConfig.rangeMax >= 100 ? 3 : 2);
+                const ratio = maxDigits >= 3
+                    ? (size <= 5 ? 0.36 : 0.37)
+                    : (size <= 5 ? 0.44 : (size <= 8 ? 0.48 : 0.50));
+                return Math.max(6.5, Math.min(26, Math.round(cellPx * ratio * 10) / 10));
             }
 
             function buildSingleMazeCardHTML(maze, cardIndex, isAnswerKey) {
@@ -2005,7 +2283,7 @@
                                         <span class="${labelTextSize} font-bold uppercase text-slate-700">${start1Label}</span>
                                         <svg class="${arrowSize} shrink-0" viewBox="0 0 24 24" fill="currentColor" stroke="#334155" stroke-width="1.5"><path d="M4 9h10V5l7 7-7 7v-4H4V9z"/></svg>
                                     </div>
-                                    <div class="a4-maze-grid w-full" style="grid-template-columns: repeat(${size}, 1fr);">
+                                    <div class="a4-maze-grid w-full" style="grid-template-columns: repeat(${size}, minmax(0, 1fr));">
                                         ${cellsHTML}
                                     </div>
                                     <div class="absolute translate-y-1/2 flex items-center gap-0.5 whitespace-nowrap" style="left: calc(100% + 4px); bottom: ${edgeOffsetPct}%; color: ${c1.main};">
@@ -2211,6 +2489,19 @@
                 const previewContainer = document.getElementById('a4-preview-container');
                 const printRoot = document.getElementById('print-root');
 
+                const hasValidFactors = worksheetConfig.blankMode || syncA4FactorsFromSlots();
+                if (!hasValidFactors) {
+                    printRoot.innerHTML = '';
+                    previewContainer.innerHTML = `
+                        <div class="max-w-sm my-auto bg-white border-2 border-dashed border-amber-300 rounded-2xl p-6 text-center shadow-sm">
+                            <div class="text-2xl mb-2">🔢</div>
+                            <div class="text-sm font-bold text-slate-800 mb-1">Wybierz brakujący mnożnik</div>
+                            <p class="text-xs text-slate-500">Kliknij wybraną liczbę z zakresu 2–12 w panelu po lewej stronie, aby wygenerować gotową kartę pracy A4.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
                 const showKey = !worksheetConfig.blankMode && worksheetConfig.includeAnswerKey;
                 const page1HTML = buildA4SheetHTML(false);
                 const page2HTML = showKey
@@ -2291,18 +2582,42 @@
                     btn.style.borderColor = '';
                     btn.style.boxShadow = '';
 
-                    if (worksheetConfig.factors[0] === val) {
+                    if (worksheetConfig.factorSlots[0] === val) {
                         btn.classList.add('active-selected');
                         btn.style.background = c1.main;
                         btn.style.borderColor = c1.dark;
                         btn.style.boxShadow = `0 4px 10px ${c1.main}44`;
-                    } else if (worksheetConfig.factors[1] === val) {
+                    } else if (worksheetConfig.factorSlots[1] === val) {
                         btn.classList.add('active-selected');
                         btn.style.background = c2.main;
                         btn.style.borderColor = c2.dark;
                         btn.style.boxShadow = `0 4px 10px ${c2.main}44`;
                     }
                 });
+
+                const a4SlotsContainer = document.getElementById('a4-active-slots');
+                const a4SlotsToShow = worksheetConfig.players === 2
+                    ? [0, 1]
+                    : (worksheetConfig.factorSlots[1] !== null ? [0, 1] : [0]);
+                a4SlotsContainer.innerHTML = a4SlotsToShow.map(idx => {
+                    const f = worksheetConfig.factorSlots[idx];
+                    const col = trackColors[idx];
+                    const role = worksheetConfig.players === 2 ? `Gracz ${idx + 1}` : `Trasa ${idx + 1}`;
+                    if (f !== null) {
+                        return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200"><span class="w-2.5 h-2.5 rounded-full" style="background:${col.main}"></span>${role}: ×${f}</span>`;
+                    }
+                    return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-bold bg-amber-50 text-amber-800 border border-dashed border-amber-300"><span class="w-2.5 h-2.5 rounded-full" style="background:${col.main}"></span>${role}: wybierz liczbę</span>`;
+                }).join('');
+
+                const isA4Valid = isBlank || getActiveFactorsFromSlots(worksheetConfig.factorSlots, worksheetConfig.players === 2).length > 0;
+                const a4PrintBtn = document.getElementById('btn-a4-print');
+                const a4RegenBtn = document.getElementById('btn-a4-regenerate');
+                a4PrintBtn.disabled = !isA4Valid;
+                a4PrintBtn.classList.toggle('opacity-50', !isA4Valid);
+                a4PrintBtn.classList.toggle('cursor-not-allowed', !isA4Valid);
+                a4RegenBtn.disabled = !isA4Valid;
+                a4RegenBtn.classList.toggle('opacity-50', !isA4Valid);
+                a4RegenBtn.classList.toggle('cursor-not-allowed', !isA4Valid);
 
                 document.getElementById('a4-range-min').value = worksheetConfig.rangeMin;
                 document.getElementById('a4-range-max').value = worksheetConfig.rangeMax;
@@ -2375,13 +2690,17 @@
 
                 worksheetConfig.players = isTwoPlayerMode ? 2 : 1;
                 worksheetConfig.gridSize = gridSize;
-                worksheetConfig.factors = [...selectedFactors];
+                worksheetConfig.factorSlots = [...factorSlots];
+                if (worksheetConfig.players === 2 && worksheetConfig.factorSlots[0] !== null && worksheetConfig.factorSlots[1] === null) {
+                    worksheetConfig.factorSlots[1] = worksheetConfig.factorSlots[0] === 4 ? 6 : 4;
+                }
+                if (!syncA4FactorsFromSlots() && !worksheetConfig.blankMode) {
+                    worksheetConfig.factorSlots = worksheetConfig.players === 2 ? [7, 4] : [7, null];
+                    syncA4FactorsFromSlots();
+                }
                 worksheetConfig.rangeMin = rangeMin;
                 worksheetConfig.rangeMax = rangeMax;
                 worksheetConfig.previewZoom = 'fit';
-                if (worksheetConfig.players === 2 && worksheetConfig.factors.length < 2) {
-                    worksheetConfig.factors.push(worksheetConfig.factors[0] === 4 ? 6 : 4);
-                }
 
                 regenerateWorksheets();
                 document.getElementById('a4-modal').classList.remove('hidden');
@@ -2503,10 +2822,15 @@
                 updateA4UI();
             });
 
-            window.addEventListener('resize', applyA4PreviewScale);
+            window.addEventListener('resize', () => {
+                applyA4PreviewScale();
+                fitBoardTypography();
+            });
             if (typeof ResizeObserver !== 'undefined') {
                 const previewResizeObserver = new ResizeObserver(() => applyA4PreviewScale());
                 previewResizeObserver.observe(document.getElementById('a4-preview-container'));
+                const boardResizeObserver = new ResizeObserver(() => fitBoardTypography());
+                boardResizeObserver.observe(document.getElementById('maze-board'));
             }
 
             document.getElementById('btn-a4-regenerate').addEventListener('click', () => {

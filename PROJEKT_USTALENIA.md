@@ -14,6 +14,11 @@ Dokument zbiera kluczowe decyzje funkcjonalne, graficzne i techniczne dotyczące
   - Domyślnie: **`1` – `200`**.
   - Polecane szybkie presety: **`1–30`**, **`30–100`**, **`1–200`**.
   - Wszystkie wielokrotności na trasach oraz liczby rozpraszające mieszczą się w zadanym zakresie (z bezpiecznym fallbackiem matematycznym dla bardzo wąskich przedziałów).
+- **Wybór mnożników (`2–12`)**:
+  - Kliknięcie wybranej już liczby bazowej odznacza ją (zarówno w grze, jak i w generatorze kart A4), po czym kliknięcie nowej liczby przypisuje ją do wolnego miejsca (Gracz 1 / Gracz 2).
+- **Ograniczenia generowania tras labiryntu**:
+  - Na trasie unika się powtórzeń tej samej wielokrotności pod rząd (twardy limit: maksymalnie 3 razy pod rząd, jeśli w zakresie jest więcej wielokrotności).
+  - W trybie 2 tras występują maksymalnie **2 kolejne pola dwukolorowe** (wspólne wielokrotności) pod rząd.
 - **Oznaczenia START i META**:
   - Etykiety `START ×N` oraz `META ×N` wyświetlane są bezpośrednio przy odpowiednich strzałkach wejścia/wyjścia, zakotwiczone na zewnątrz siatki tak, aby nigdy nie nachodziły na obramowanie planszy.
 
