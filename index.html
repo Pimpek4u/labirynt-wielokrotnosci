@@ -5,11 +5,11 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Labirynt Tabliczki Mnożenia</title>
         <script src="https://cdn.tailwindcss.com"></script>
-        <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
         <style>
             body {
-                font-family: 'Fredoka', sans-serif;
+                font-family: 'Nunito', system-ui, -apple-system, sans-serif;
                 background: linear-gradient(135deg, #e0e7ff 0%, #f0f9ff 50%, #fae8ff 100%);
                 user-select: none;
                 -webkit-tap-highlight-color: transparent;
@@ -146,21 +146,22 @@
 
             .a4-maze-grid {
                 display: grid;
-                border: 2.5px solid #1e293b;
+                border: 1.5px solid #475569;
                 background-color: #ffffff;
-                border-radius: 6px;
+                border-radius: 5px;
                 overflow: hidden;
             }
 
             .a4-maze-cell {
                 aspect-ratio: 1 / 1;
-                border: 1px solid #94a3b8;
+                border: 0.75px solid #cbd5e1;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-weight: 700;
-                color: #0f172a;
+                font-weight: 500;
+                color: #475569;
                 line-height: 1;
+                font-variant-numeric: tabular-nums;
             }
 
             @page {
@@ -189,7 +190,7 @@
                     max-width: none !important;
                     max-height: 276mm !important;
                     aspect-ratio: auto !important;
-                    padding: 2mm 3mm !important;
+                    padding: 2mm 2mm !important;
                     margin: 0 !important;
                     border: none !important;
                     border-radius: 0 !important;
@@ -202,12 +203,16 @@
                     break-after: auto;
                 }
                 .a4-board-single {
-                    width: 136mm !important;
-                    max-width: 136mm !important;
+                    width: 126mm !important;
+                    max-width: 126mm !important;
                 }
                 .a4-board-double {
-                    width: 84mm !important;
-                    max-width: 84mm !important;
+                    width: 80mm !important;
+                    max-width: 80mm !important;
+                }
+                .a4-board-quad {
+                    width: 52mm !important;
+                    max-width: 52mm !important;
                 }
             }
         </style>
@@ -276,8 +281,31 @@
             </div>
 
             <!-- Wybór kolorów dla wybranych tras -->
-            <div id="color-pickers-container" class="flex flex-col sm:flex-row justify-center gap-3 mb-5">
+            <div id="color-pickers-container" class="flex flex-col sm:flex-row justify-center gap-3 mb-4">
                 <!-- Generowane dynamicznie przez JS -->
+            </div>
+
+            <!-- Zakres liczb na planszy -->
+            <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-3 mb-4 text-left">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Zakres liczb na planszy (od – do)</span>
+                    <div class="flex items-center gap-1.5 text-[11px]">
+                        <span class="text-slate-400 font-semibold">Polecane:</span>
+                        <button type="button" data-range="1,30" class="setup-range-preset px-2 py-0.5 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold hover:bg-indigo-50 hover:border-indigo-300 transition-colors">1–30</button>
+                        <button type="button" data-range="30,100" class="setup-range-preset px-2 py-0.5 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold hover:bg-indigo-50 hover:border-indigo-300 transition-colors">30–100</button>
+                        <button type="button" data-range="1,200" class="setup-range-preset px-2 py-0.5 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold hover:bg-indigo-50 hover:border-indigo-300 transition-colors">1–200</button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2.5">
+                    <label class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-1.5">
+                        <span class="text-xs font-bold text-slate-500">Od:</span>
+                        <input id="setup-range-min" type="number" min="1" max="999" value="1" class="w-full text-sm font-bold text-slate-800 outline-none bg-transparent">
+                    </label>
+                    <label class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-1.5">
+                        <span class="text-xs font-bold text-slate-500">Do:</span>
+                        <input id="setup-range-max" type="number" min="1" max="999" value="200" class="w-full text-sm font-bold text-slate-800 outline-none bg-transparent">
+                    </label>
+                </div>
             </div>
 
             <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5 mb-6 text-xs sm:text-sm text-slate-600 leading-relaxed text-left flex gap-3 items-start">
@@ -348,43 +376,48 @@
             <div class="relative w-full flex flex-col items-center justify-center my-1">
                 
                 <!-- Górna strefa strzałki dla Trasy 2 (Prawy górny róg - wejście z góry) -->
-                <div class="w-full max-w-[540px] flex justify-end px-1 sm:px-2 h-8 items-end">
-                    <div id="arrow-start-2" class="hidden arrow-indicator-y mr-[2%] mb-1" title="Start Trasy 2">
-                        <svg id="svg-start-2" class="w-7 h-7 sm:w-8 sm:h-8" viewBox="0 0 24 24" fill="currentColor" stroke="#1e293b" stroke-width="1.5">
+                <div id="arrow-start-2-row" class="relative w-full max-w-[540px] h-9">
+                    <div id="arrow-start-2" class="hidden absolute bottom-1 translate-x-1/2 flex flex-col items-center arrow-indicator-y" title="Start Trasy 2">
+                        <span id="label-start-2" class="text-[10px] sm:text-xs font-extrabold text-slate-800 bg-white/90 px-1.5 rounded border border-slate-300 leading-tight mb-0.5 whitespace-nowrap">START</span>
+                        <svg id="svg-start-2" class="w-6 h-6 sm:w-7 sm:h-7" viewBox="0 0 24 24" fill="currentColor" stroke="#1e293b" stroke-width="1.5">
                             <path d="M9 4h6v10h4l-7 7-7-7h4V4z"/>
                         </svg>
                     </div>
                 </div>
 
                 <!-- Środkowy rząd: Strzałka Start 1 | Plansza | Strzałka Meta 1 -->
-                <div class="relative w-full flex items-center justify-center px-8 sm:px-12">
-                    
-                    <!-- Strzałka START 1 (Lewy górny róg) -->
-                    <div id="arrow-start-1" class="absolute left-0 sm:left-2 top-[5%] -translate-y-1/2 z-10 arrow-indicator-x" title="Start Trasy 1">
-                        <svg id="svg-start-1" class="w-7 h-7 sm:w-10 sm:h-10" viewBox="0 0 24 24" fill="currentColor" stroke="#1e293b" stroke-width="1.5">
-                            <path d="M4 9h10V5l7 7-7 7v-4H4V9z"/>
-                        </svg>
-                    </div>
+                <div class="relative w-full flex items-center justify-center px-14 sm:px-20">
+                    <div id="game-board-wrapper" class="relative w-full max-w-[540px]">
+                        <!-- Strzałka START 1 (Lewy górny róg) -->
+                        <div id="arrow-start-1" class="absolute -translate-y-1/2 z-10 arrow-indicator-x flex items-center gap-1 whitespace-nowrap" style="right: calc(100% + 6px); top: 5%;" title="Start Trasy 1">
+                            <span id="label-start-1" class="text-[10px] sm:text-xs font-extrabold text-slate-800 bg-white/90 px-1.5 py-0.5 rounded border border-slate-300 leading-tight">START</span>
+                            <svg id="svg-start-1" class="w-6 h-6 sm:w-8 sm:h-8 shrink-0" viewBox="0 0 24 24" fill="currentColor" stroke="#1e293b" stroke-width="1.5">
+                                <path d="M4 9h10V5l7 7-7 7v-4H4V9z"/>
+                            </svg>
+                        </div>
 
-                    <!-- Siatka planszy -->
-                    <div id="maze-board" class="maze-grid w-full max-w-[540px]">
-                        <!-- Komórki generowane przez JS -->
-                    </div>
+                        <!-- Siatka planszy -->
+                        <div id="maze-board" class="maze-grid w-full">
+                            <!-- Komórki generowane przez JS -->
+                        </div>
 
-                    <!-- Strzałka META 1 (Prawy dolny róg) -->
-                    <div id="arrow-end-1" class="absolute right-0 sm:right-2 bottom-[5%] translate-y-1/2 z-10 arrow-indicator-x" title="Meta Trasy 1">
-                        <svg id="svg-end-1" class="w-7 h-7 sm:w-10 sm:h-10" viewBox="0 0 24 24" fill="currentColor" stroke="#1e293b" stroke-width="1.5">
-                            <path d="M4 9h10V5l7 7-7 7v-4H4V9z"/>
-                        </svg>
+                        <!-- Strzałka META 1 (Prawy dolny róg) -->
+                        <div id="arrow-end-1" class="absolute translate-y-1/2 z-10 arrow-indicator-x flex items-center gap-1 whitespace-nowrap" style="left: calc(100% + 6px); bottom: 5%;" title="Meta Trasy 1">
+                            <svg id="svg-end-1" class="w-6 h-6 sm:w-8 sm:h-8 shrink-0" viewBox="0 0 24 24" fill="currentColor" stroke="#1e293b" stroke-width="1.5">
+                                <path d="M4 9h10V5l7 7-7 7v-4H4V9z"/>
+                            </svg>
+                            <span id="label-end-1" class="text-[10px] sm:text-xs font-extrabold text-slate-800 bg-white/90 px-1.5 py-0.5 rounded border border-slate-300 leading-tight">META</span>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Dolna strefa strzałki dla Trasy 2 (Lewy dolny róg - wyjście w dół) -->
-                <div class="w-full max-w-[540px] flex justify-start px-1 sm:px-2 h-8 items-start">
-                    <div id="arrow-end-2" class="hidden arrow-indicator-y ml-[2%] mt-1" title="Meta Trasy 2">
-                        <svg id="svg-end-2" class="w-7 h-7 sm:w-8 sm:h-8" viewBox="0 0 24 24" fill="currentColor" stroke="#1e293b" stroke-width="1.5">
+                <div id="arrow-end-2-row" class="relative w-full max-w-[540px] h-9">
+                    <div id="arrow-end-2" class="hidden absolute top-1 -translate-x-1/2 flex flex-col items-center arrow-indicator-y" title="Meta Trasy 2">
+                        <svg id="svg-end-2" class="w-6 h-6 sm:w-7 sm:h-7" viewBox="0 0 24 24" fill="currentColor" stroke="#1e293b" stroke-width="1.5">
                             <path d="M9 4h6v10h4l-7 7-7-7h4V4z"/>
                         </svg>
+                        <span id="label-end-2" class="text-[10px] sm:text-xs font-extrabold text-slate-800 bg-white/90 px-1.5 rounded border border-slate-300 leading-tight mt-0.5 whitespace-nowrap">META</span>
                     </div>
                 </div>
 
@@ -507,39 +540,75 @@
                             </div>
                         </div>
 
-                        <!-- 3. Jakie liczby -->
-                        <div class="bg-white border border-slate-200 rounded-2xl p-3">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-xs font-bold uppercase tracking-wider text-slate-500">3. Jakie liczby?</span>
-                                <span id="a4-factors-hint" class="text-[11px] font-semibold text-slate-400">1 lub 2 mnożniki</span>
+                        <!-- 3. Jakie liczby i zakres -->
+                        <div class="bg-white border border-slate-200 rounded-2xl p-3 flex flex-col gap-3">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-xs font-bold uppercase tracking-wider text-slate-500">3. Jakie liczby?</span>
+                                    <span id="a4-factors-hint" class="text-[11px] font-semibold text-slate-400">1 lub 2 mnożniki</span>
+                                </div>
+                                <div id="a4-factor-buttons" class="grid grid-cols-6 gap-1.5">
+                                    <!-- Generowane przez JS -->
+                                </div>
                             </div>
-                            <div id="a4-factor-buttons" class="grid grid-cols-6 gap-1.5">
-                                <!-- Generowane przez JS -->
+                            <div class="pt-2 border-t border-slate-100">
+                                <div class="flex flex-wrap items-center justify-between gap-1 mb-1.5">
+                                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Zakres liczb (od – do)</span>
+                                    <div class="flex items-center gap-1 text-[10px]">
+                                        <span class="text-slate-400">Polecamy:</span>
+                                        <button type="button" data-a4-range="1,30" class="a4-range-preset px-1.5 py-0.5 rounded bg-slate-100 hover:bg-indigo-100 text-slate-700 font-bold transition-colors">1–30</button>
+                                        <button type="button" data-a4-range="30,100" class="a4-range-preset px-1.5 py-0.5 rounded bg-slate-100 hover:bg-indigo-100 text-slate-700 font-bold transition-colors">30–100</button>
+                                        <button type="button" data-a4-range="1,200" class="a4-range-preset px-1.5 py-0.5 rounded bg-slate-100 hover:bg-indigo-100 text-slate-700 font-bold transition-colors">1–200</button>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <label class="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1">
+                                        <span class="text-xs font-bold text-slate-500">Od:</span>
+                                        <input id="a4-range-min" type="number" min="1" max="999" value="1" class="w-full text-xs sm:text-sm font-bold text-slate-800 outline-none bg-transparent">
+                                    </label>
+                                    <label class="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1">
+                                        <span class="text-xs font-bold text-slate-500">Do:</span>
+                                        <input id="a4-range-max" type="number" min="1" max="999" value="200" class="w-full text-xs sm:text-sm font-bold text-slate-800 outline-none bg-transparent">
+                                    </label>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- 4. Czy 1 czy dwie plansze na stronę A4 -->
+                        <!-- 4. Czy 1, 2 czy 4 plansze na stronę A4 -->
                         <div class="bg-white border border-slate-200 rounded-2xl p-3">
                             <div class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">4. Plansze na stronie A4?</div>
-                            <div class="grid grid-cols-2 gap-1.5">
-                                <button id="a4-boards-1" type="button" class="py-2 px-2 rounded-xl font-bold text-xs sm:text-sm bg-indigo-600 text-white shadow-sm transition-all">
-                                    📄 1 plansza
+                            <div class="grid grid-cols-3 gap-1.5">
+                                <button id="a4-boards-1" type="button" class="py-2 px-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow-sm transition-all">
+                                    1 plansza
                                 </button>
-                                <button id="a4-boards-2" type="button" class="py-2 px-2 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all">
-                                    📑 2 plansze
+                                <button id="a4-boards-2" type="button" class="py-2 px-1.5 rounded-xl font-bold text-xs bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all">
+                                    2 plansze
+                                </button>
+                                <button id="a4-boards-4" type="button" class="py-2 px-1.5 rounded-xl font-bold text-xs bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all">
+                                    4 plansze
                                 </button>
                             </div>
-                            <p id="a4-boards-note" class="text-[11px] text-slate-500 mt-1.5">Duża plansza z miejscem na imię i datę.</p>
+                            <p id="a4-boards-note" class="text-[11px] text-slate-500 mt-1.5">Jedna duża plansza na stronę A4.</p>
                         </div>
 
-                        <!-- Klucz odpowiedzi na 2. stronie -->
-                        <label class="bg-white border border-slate-200 rounded-2xl p-3 flex items-center gap-3 cursor-pointer hover:bg-slate-50 transition-colors">
-                            <input id="a4-include-key" type="checkbox" class="w-5 h-5 rounded accent-indigo-600 cursor-pointer shrink-0">
-                            <div class="text-left">
-                                <div class="text-sm font-bold text-slate-800">Dołącz klucz odpowiedzi</div>
-                                <div class="text-xs text-slate-500">Generuje 2. stronę A4 z zaznaczonymi trasami</div>
-                            </div>
-                        </label>
+                        <!-- Opcje dodatkowe: Imię/data oraz Klucz odpowiedzi -->
+                        <div class="flex flex-col gap-2">
+                            <label class="bg-white border border-slate-200 rounded-2xl p-3 flex items-center gap-3 cursor-pointer hover:bg-slate-50 transition-colors">
+                                <input id="a4-include-student" type="checkbox" class="w-5 h-5 rounded accent-indigo-600 cursor-pointer shrink-0">
+                                <div class="text-left">
+                                    <div class="text-sm font-bold text-slate-800">Pole na imię, nazwisko i datę</div>
+                                    <div class="text-xs text-slate-500">Dodaje nagłówek do podpisania karty przez ucznia</div>
+                                </div>
+                            </label>
+
+                            <label class="bg-white border border-slate-200 rounded-2xl p-3 flex items-center gap-3 cursor-pointer hover:bg-slate-50 transition-colors">
+                                <input id="a4-include-key" type="checkbox" class="w-5 h-5 rounded accent-indigo-600 cursor-pointer shrink-0">
+                                <div class="text-left">
+                                    <div class="text-sm font-bold text-slate-800">Dołącz klucz odpowiedzi</div>
+                                    <div class="text-xs text-slate-500">Generuje 2. stronę A4 z zaznaczonymi trasami</div>
+                                </div>
+                            </label>
+                        </div>
 
                         <!-- Akcje -->
                         <div class="flex flex-col gap-2 pt-1">
@@ -575,9 +644,11 @@
             ];
 
             // --- KONFIGURACJA I STAN GRY ---
-            let gridSize = 10;              // 8, 10 lub 12
+            let gridSize = 10;              // 4, 5, 6, 8, 10 lub 12
             let isTwoPlayerMode = false;    // Tryb 1 gracza lub 2 graczy
             let selectedFactors = [7];      // Tablica 1 lub 2 wybranych liczb
+            let rangeMin = 1;               // Dolna granica zakresu liczb na planszy
+            let rangeMax = 200;             // Górna granica zakresu liczb na planszy
             let trackColors = [COLOR_PALETTE[0], COLOR_PALETTE[1]]; // Kolor Trasy 1 i Trasy 2
             let soundEnabled = true;
 
@@ -844,10 +915,21 @@
                 return path;
             }
 
-            function createMazeInstance(size, factors) {
+            function normalizeRange(rawMin, rawMax) {
+                let a = parseInt(rawMin, 10);
+                let b = parseInt(rawMax, 10);
+                if (isNaN(a) || a < 1) a = 1;
+                if (isNaN(b) || b < 1) b = 200;
+                a = Math.min(999, Math.max(1, a));
+                b = Math.min(999, Math.max(1, b));
+                return { min: Math.min(a, b), max: Math.max(a, b) };
+            }
+
+            function createMazeInstance(size, factors, minVal = 1, maxVal = 200) {
                 const f1 = factors[0];
                 const isDual = factors.length === 2;
                 const f2 = isDual ? factors[1] : null;
+                const { min: lo, max: hi } = normalizeRange(minVal, maxVal);
 
                 const sol1 = generatePathForSize(size, 0, 0, size - 1, size - 1);
                 let sol2 = [];
@@ -868,23 +950,46 @@
                     }
                 }
 
-                const mult1 = Array.from({ length: 12 }, (_, i) => f1 * (i + 1));
-                const mult2 = isDual ? Array.from({ length: 12 }, (_, i) => f2 * (i + 1)) : [];
+                const buildMultiplesInRange = (factor) => {
+                    const arr = [];
+                    const first = Math.ceil(lo / factor) * factor;
+                    for (let v = first; v <= hi; v += factor) {
+                        if (v > 0) arr.push(v);
+                    }
+                    if (arr.length === 0) {
+                        const fallback = Math.max(factor, Math.ceil(lo / factor) * factor);
+                        arr.push(fallback, fallback + factor);
+                    }
+                    return arr;
+                };
+
+                const mult1 = buildMultiplesInRange(f1);
+                const mult2 = isDual ? buildMultiplesInRange(f2) : [];
 
                 let commonMults = [];
                 if (isDual) {
                     const baseLcm = lcm(f1, f2);
-                    for (let k = 1; k <= 6; k++) {
-                        if (baseLcm * k <= 144) commonMults.push(baseLcm * k);
+                    const firstCommon = Math.ceil(lo / baseLcm) * baseLcm;
+                    for (let v = firstCommon; v <= hi; v += baseLcm) {
+                        if (v > 0) commonMults.push(v);
                     }
-                    if (commonMults.length === 0) commonMults.push(baseLcm);
+                    if (commonMults.length === 0) {
+                        commonMults.push(Math.max(baseLcm, firstCommon));
+                    }
                 }
 
-                const maxVal = Math.max(85, f1 * 10, isDual ? f2 * 10 : 0);
                 const nonMultiples = [];
-                for (let n = 1; n <= maxVal; n++) {
+                for (let n = lo; n <= hi; n++) {
                     if (n % f1 !== 0 && (!isDual || n % f2 !== 0)) {
                         nonMultiples.push(n);
+                    }
+                }
+                if (nonMultiples.length === 0) {
+                    const fallbackTop = Math.max(30, hi + 15);
+                    for (let n = 1; n <= fallbackTop; n++) {
+                        if (n % f1 !== 0 && (!isDual || n % f2 !== 0)) {
+                            nonMultiples.push(n);
+                        }
                     }
                 }
 
@@ -924,7 +1029,7 @@
             }
 
             function generateMaze() {
-                const instance = createMazeInstance(gridSize, selectedFactors);
+                const instance = createMazeInstance(gridSize, selectedFactors, rangeMin, rangeMax);
                 gridData = instance.gridData;
                 solutionPath1 = instance.solutionPath1;
                 solutionPath2 = instance.solutionPath2;
@@ -933,26 +1038,39 @@
             // --- RENDEROWANIE PLANSZY (DYNAMICZNE KOLORY I ROZMIAR) ---
             function renderBoard() {
                 const board = document.getElementById('maze-board');
+                const boardWrapper = document.getElementById('game-board-wrapper');
+                const topArrowRow = document.getElementById('arrow-start-2-row');
+                const bottomArrowRow = document.getElementById('arrow-end-2-row');
                 board.innerHTML = '';
                 board.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
 
-                // Dopasowanie rozmiaru czcionki i szerokości siatki (4x4 - 12x12)
+                let maxWidthClass = 'max-w-[540px]';
+                let fontClass = 'text-lg sm:text-2xl md:text-3xl';
                 if (gridSize <= 5) {
-                    board.className = 'maze-grid w-full max-w-[440px] text-2xl sm:text-4xl';
+                    maxWidthClass = 'max-w-[440px]';
+                    fontClass = 'text-2xl sm:text-4xl';
                 } else if (gridSize === 6) {
-                    board.className = 'maze-grid w-full max-w-[480px] text-xl sm:text-3xl';
+                    maxWidthClass = 'max-w-[480px]';
+                    fontClass = 'text-xl sm:text-3xl';
                 } else if (gridSize === 8) {
-                    board.className = 'maze-grid w-full max-w-[520px] text-xl sm:text-3xl';
+                    maxWidthClass = 'max-w-[520px]';
+                    fontClass = 'text-xl sm:text-3xl';
                 } else if (gridSize === 12) {
-                    board.className = 'maze-grid w-full max-w-[560px] text-sm sm:text-xl md:text-2xl';
-                } else {
-                    board.className = 'maze-grid w-full max-w-[540px] text-lg sm:text-2xl md:text-3xl';
+                    maxWidthClass = 'max-w-[560px]';
+                    fontClass = 'text-sm sm:text-xl md:text-2xl';
                 }
+
+                boardWrapper.className = `relative w-full ${maxWidthClass}`;
+                topArrowRow.className = `relative w-full ${maxWidthClass} h-10`;
+                bottomArrowRow.className = `relative w-full ${maxWidthClass} h-10`;
+                board.className = `maze-grid w-full ${fontClass}`;
 
                 // Wyśrodkowanie strzałek względem skrajnych komórek dla każdego rozmiaru planszy
                 const edgeOffsetPct = (50 / gridSize).toFixed(2);
                 document.getElementById('arrow-start-1').style.top = `${edgeOffsetPct}%`;
                 document.getElementById('arrow-end-1').style.bottom = `${edgeOffsetPct}%`;
+                document.getElementById('arrow-start-2').style.right = `${edgeOffsetPct}%`;
+                document.getElementById('arrow-end-2').style.left = `${edgeOffsetPct}%`;
 
                 const c1 = trackColors[0];
                 const c2 = trackColors[1];
@@ -1319,6 +1437,7 @@
 
             // --- ROZPOCZĘCIE I ZAKOŃCZENIE GRY ---
             function startNewGame() {
+                syncSetupRangeFromInputs();
                 document.getElementById('setup-modal').classList.add('hidden');
                 document.getElementById('victory-modal').classList.add('hidden');
                 document.getElementById('game-screen').classList.remove('hidden');
@@ -1327,11 +1446,17 @@
                 const c1 = trackColors[0];
                 const c2 = trackColors[1];
 
-                // Kolorowanie strzałek SVG
+                // Kolorowanie strzałek SVG oraz przypisanie mnożników przy START i META
                 document.getElementById('svg-start-1').style.color = c1.main;
                 document.getElementById('svg-end-1').style.color = c1.main;
                 document.getElementById('svg-start-2').style.color = c2.main;
                 document.getElementById('svg-end-2').style.color = c2.main;
+                document.getElementById('label-start-1').textContent = `START ×${selectedFactors[0]}`;
+                document.getElementById('label-end-1').textContent = `META ×${selectedFactors[0]}`;
+                if (isDual) {
+                    document.getElementById('label-start-2').textContent = `START ×${selectedFactors[1]}`;
+                    document.getElementById('label-end-2').textContent = `META ×${selectedFactors[1]}`;
+                }
 
                 // Ustaw odznaki w wybranych kolorach w polu "Szukaj wielokrotności"
                 const badgesContainer = document.getElementById('active-factors-badges');
@@ -1573,12 +1698,41 @@
             document.getElementById('btn-win-close-x').addEventListener('click', closeVictoryModalToInspect);
             document.getElementById('btn-win-inspect').addEventListener('click', closeVictoryModalToInspect);
 
+            // --- OBSŁUGA ZAKRESU W USTAWIENIACH GRY ---
+            const setupRangeMinInput = document.getElementById('setup-range-min');
+            const setupRangeMaxInput = document.getElementById('setup-range-max');
+
+            function syncSetupRangeFromInputs() {
+                const normalized = normalizeRange(setupRangeMinInput.value, setupRangeMaxInput.value);
+                rangeMin = normalized.min;
+                rangeMax = normalized.max;
+                setupRangeMinInput.value = rangeMin;
+                setupRangeMaxInput.value = rangeMax;
+            }
+
+            setupRangeMinInput.addEventListener('change', syncSetupRangeFromInputs);
+            setupRangeMaxInput.addEventListener('change', syncSetupRangeFromInputs);
+
+            document.querySelectorAll('.setup-range-preset').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    playSound('click');
+                    const [minV, maxV] = btn.dataset.range.split(',').map(Number);
+                    rangeMin = minV;
+                    rangeMax = maxV;
+                    setupRangeMinInput.value = minV;
+                    setupRangeMaxInput.value = maxV;
+                });
+            });
+
             // --- GENERATOR KART PRACY A4 ---
             let worksheetConfig = {
                 players: 1,
                 gridSize: 10,
                 factors: [7],
+                rangeMin: 1,
+                rangeMax: 200,
                 boardsPerPage: 1,
+                includeStudentFields: false,
                 includeAnswerKey: true
             };
             let generatedWorksheets = [];
@@ -1634,10 +1788,10 @@
 
             function setA4BoardsPerPage(count) {
                 worksheetConfig.boardsPerPage = count;
-                if (count === 2 && generatedWorksheets.length < 2) {
-                    generatedWorksheets.push(createMazeInstance(worksheetConfig.gridSize, worksheetConfig.factors));
-                } else if (count === 1 && generatedWorksheets.length === 0) {
-                    generatedWorksheets = [createMazeInstance(worksheetConfig.gridSize, worksheetConfig.factors)];
+                while (generatedWorksheets.length < count) {
+                    generatedWorksheets.push(
+                        createMazeInstance(worksheetConfig.gridSize, worksheetConfig.factors, worksheetConfig.rangeMin, worksheetConfig.rangeMax)
+                    );
                 }
                 updateA4UI();
             }
@@ -1646,53 +1800,60 @@
                 const count = worksheetConfig.boardsPerPage;
                 generatedWorksheets = [];
                 for (let i = 0; i < count; i++) {
-                    generatedWorksheets.push(createMazeInstance(worksheetConfig.gridSize, worksheetConfig.factors));
+                    generatedWorksheets.push(
+                        createMazeInstance(worksheetConfig.gridSize, worksheetConfig.factors, worksheetConfig.rangeMin, worksheetConfig.rangeMax)
+                    );
                 }
             }
 
-            function getA4CellTypographyClass(size, isDouble) {
-                if (isDouble) {
+            function getA4CellTypographyClass(size, boardsCount) {
+                if (boardsCount === 4) {
+                    if (size <= 5) return 'text-sm';
+                    if (size === 6) return 'text-xs';
+                    if (size === 8) return 'text-[10px]';
+                    if (size === 10) return 'text-[8.5px]';
+                    return 'text-[7.5px]';
+                }
+                if (boardsCount === 2) {
                     if (size <= 5) return 'text-base sm:text-lg';
                     if (size === 6) return 'text-sm sm:text-base';
                     if (size === 8) return 'text-xs sm:text-sm';
                     if (size === 10) return 'text-[10px] sm:text-xs';
                     return 'text-[9px] sm:text-[10px]';
-                } else {
-                    if (size <= 5) return 'text-2xl sm:text-3xl';
-                    if (size === 6) return 'text-xl sm:text-2xl';
-                    if (size === 8) return 'text-base sm:text-xl';
-                    if (size === 10) return 'text-sm sm:text-base';
-                    return 'text-xs sm:text-sm';
                 }
+                if (size <= 5) return 'text-2xl sm:text-3xl';
+                if (size === 6) return 'text-xl sm:text-2xl';
+                if (size === 8) return 'text-base sm:text-xl';
+                if (size === 10) return 'text-sm sm:text-base';
+                return 'text-xs sm:text-sm';
             }
 
             function buildSingleMazeCardHTML(maze, cardIndex, isAnswerKey) {
                 const size = worksheetConfig.gridSize;
                 const factors = worksheetConfig.factors;
                 const isDual = factors.length === 2;
-                const isDouble = worksheetConfig.boardsPerPage === 2;
+                const boardsCount = worksheetConfig.boardsPerPage;
+                const isDouble = boardsCount === 2;
+                const isQuad = boardsCount === 4;
                 const c1 = trackColors[0];
                 const c2 = trackColors[1];
 
-                const cellFontClass = getA4CellTypographyClass(size, isDouble);
-                const boardWidthClass = isDouble
-                    ? 'a4-board-double w-[240px] sm:w-[270px]'
-                    : 'a4-board-single w-[340px] sm:w-[430px]';
+                const cellFontClass = getA4CellTypographyClass(size, boardsCount);
+                const boardWidthClass = isQuad
+                    ? 'a4-board-quad w-[155px] sm:w-[175px]'
+                    : (isDouble ? 'a4-board-double w-[230px] sm:w-[260px]' : 'a4-board-single w-[320px] sm:w-[400px]');
 
                 const edgeOffsetPct = (50 / size).toFixed(2);
-                const arrowSize = isDouble ? 'w-4 h-4' : 'w-6 h-6';
-                const arrowWrapperPad = isDouble ? 'px-5' : 'px-8';
+                const arrowSize = isQuad ? 'w-3 h-3' : (isDouble ? 'w-4 h-4' : 'w-5 h-5');
+                const labelTextClass = isQuad ? 'text-[7px]' : (isDouble ? 'text-[8.5px]' : 'text-[10px]');
+                const arrowWrapperPad = isQuad ? 'px-10' : (isDouble ? 'px-12' : 'px-16');
 
-                const factorBadges = isDual
-                    ? `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-white font-bold border border-slate-800 text-xs" style="background:${c1.main}">×${factors[0]}</span>
-                       <span class="text-slate-400 font-bold text-xs">i</span>
-                       <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-white font-bold border border-slate-800 text-xs" style="background:${c2.main}">×${factors[1]}</span>`
-                    : `<span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-white font-bold border border-slate-800 text-xs" style="background:${c1.main}">×${factors[0]}</span>`;
-
+                const letterLabels = ['A', 'B', 'C', 'D'];
+                const cardSuffix = boardsCount > 1 ? ` (${letterLabels[cardIndex]})` : '';
                 const modeLabel = worksheetConfig.players === 2 ? '2 Graczy' : '1 Gracz';
                 const cardTitle = isAnswerKey
-                    ? `Klucz odpowiedzi ${isDouble ? `(${cardIndex === 0 ? 'A' : 'B'})` : ''}`
-                    : `Labirynt wielokrotności ${isDouble ? `(${cardIndex === 0 ? 'A' : 'B'})` : ''}`;
+                    ? `Klucz odpowiedzi${cardSuffix}`
+                    : `Labirynt wielokrotności${cardSuffix}`;
 
                 let cellsHTML = '';
                 for (let r = 0; r < size; r++) {
@@ -1702,80 +1863,80 @@
                             const in1 = maze.solutionPath1.some(p => p.r === r && p.c === c);
                             const in2 = isDual && maze.solutionPath2.some(p => p.r === r && p.c === c);
                             if (in1 && in2) {
-                                inlineStyle = `background: linear-gradient(135deg, ${c1.soft} 50%, ${c2.soft} 50%); box-shadow: inset 0 0 0 2.5px ${c1.main}; color: #0f172a;`;
+                                inlineStyle = `background: linear-gradient(135deg, ${c1.soft} 50%, ${c2.soft} 50%); box-shadow: inset 0 0 0 2px ${c1.main}; color: #1e293b; font-weight: 700;`;
                             } else if (in1) {
-                                inlineStyle = `background-color: ${c1.soft}; box-shadow: inset 0 0 0 2.5px ${c1.main}; color: ${c1.dark};`;
+                                inlineStyle = `background-color: ${c1.soft}; box-shadow: inset 0 0 0 2px ${c1.main}; color: ${c1.dark}; font-weight: 700;`;
                             } else if (in2) {
-                                inlineStyle = `background-color: ${c2.soft}; box-shadow: inset 0 0 0 2.5px ${c2.main}; color: ${c2.dark};`;
+                                inlineStyle = `background-color: ${c2.soft}; box-shadow: inset 0 0 0 2px ${c2.main}; color: ${c2.dark}; font-weight: 700;`;
                             }
                         }
                         cellsHTML += `<div class="a4-maze-cell ${cellFontClass}" style="${inlineStyle}">${maze.gridData[r][c]}</div>`;
                     }
                 }
 
-                const headerSection = isAnswerKey
-                    ? `<div class="flex items-center justify-between gap-2 pb-1.5 border-b border-slate-300">
-                           <div class="flex items-center gap-2 flex-wrap">
-                               <span class="font-bold text-slate-800 ${isDouble ? 'text-xs sm:text-sm' : 'text-base sm:text-lg'}">${cardTitle}</span>
-                               <span class="text-[11px] font-semibold text-slate-500">${size}×${size} · ${modeLabel}</span>
+                const studentHeaderRow = (!isAnswerKey && worksheetConfig.includeStudentFields)
+                    ? `<div class="flex items-center justify-between gap-2 ${isQuad ? 'text-[8.5px]' : 'text-[11px]'} text-slate-600 pt-0.5">
+                           <div class="flex-1 flex items-end gap-1">
+                               <span class="font-semibold whitespace-nowrap">${isQuad ? 'Imię:' : 'Imię i nazwisko:'}</span>
+                               <span class="flex-1 border-b border-slate-400 h-2.5"></span>
                            </div>
-                           <div class="flex items-center gap-1.5">${factorBadges}</div>
+                           <div class="${isQuad ? 'w-14' : 'w-28'} flex items-end gap-1">
+                               <span class="font-semibold whitespace-nowrap">Data:</span>
+                               <span class="flex-1 border-b border-slate-400 h-2.5"></span>
+                           </div>
                        </div>`
-                    : `<div class="flex flex-col gap-1.5 pb-1.5 border-b border-slate-300">
-                           <div class="flex items-center justify-between gap-2 flex-wrap">
-                               <div class="flex items-center gap-2">
-                                   <span class="font-bold text-slate-800 ${isDouble ? 'text-xs sm:text-sm' : 'text-base sm:text-lg'}">${cardTitle}</span>
-                                   <span class="text-[11px] font-semibold text-slate-500">${size}×${size} · ${modeLabel}</span>
-                               </div>
-                               <div class="flex items-center gap-1.5">${factorBadges}</div>
-                           </div>
-                           <div class="flex items-center justify-between gap-4 text-[11px] sm:text-xs text-slate-700 pt-0.5">
-                               <div class="flex-1 flex items-end gap-1.5">
-                                   <span class="font-semibold whitespace-nowrap">Imię i nazwisko:</span>
-                                   <span class="flex-1 border-b border-slate-400 h-3.5"></span>
-                               </div>
-                               <div class="w-28 sm:w-36 flex items-end gap-1.5">
-                                   <span class="font-semibold whitespace-nowrap">Data:</span>
-                                   <span class="flex-1 border-b border-slate-400 h-3.5"></span>
-                               </div>
-                           </div>
-                       </div>`;
+                    : '';
+
+                const headerSection = `
+                    <div class="flex flex-col gap-1 pb-1 border-b border-slate-200">
+                        <div class="flex items-center justify-between gap-1.5 flex-wrap">
+                            <span class="font-bold text-slate-700 ${isQuad ? 'text-[10px]' : (isDouble ? 'text-xs' : 'text-sm sm:text-base')}">${cardTitle}</span>
+                            <span class="${isQuad ? 'text-[8.5px]' : 'text-[10px]'} font-semibold text-slate-400">${size}×${size} · ${modeLabel} · ${worksheetConfig.rangeMin}–${worksheetConfig.rangeMax}</span>
+                        </div>
+                        ${studentHeaderRow}
+                    </div>
+                `;
 
                 const instructionLine = isAnswerKey
                     ? ''
-                    : `<div class="text-center text-[10px] sm:text-[11px] text-slate-600 mt-1">
-                           Połącz sąsiadujące krawędziami pola od strzałki <strong>START</strong> do <strong>META</strong> (bez ruchów na skos).
+                    : `<div class="text-center ${isQuad ? 'text-[7.5px]' : 'text-[10px]'} text-slate-500 mt-0.5 leading-tight">
+                           Połącz sąsiadujące krawędziami pola od <strong>START</strong> do <strong>META</strong> (bez ruchów na skos).
                        </div>`;
 
+                const f1Label = `×${factors[0]}`;
+                const f2Label = isDual ? `×${factors[1]}` : '';
+
                 return `
-                    <div class="flex flex-col items-center w-full ${isDouble ? 'gap-1' : 'gap-2.5'}">
+                    <div class="flex flex-col items-center w-full ${isQuad ? 'gap-0.5' : (isDouble ? 'gap-1' : 'gap-2')}">
                         <div class="w-full">${headerSection}</div>
                         <div class="flex flex-col items-center justify-center w-full">
                             ${isDual ? `
-                            <div class="${boardWidthClass} flex justify-end ${isDouble ? 'h-4' : 'h-6'} items-end">
-                                <div class="flex items-center gap-0.5" style="margin-right: calc(${edgeOffsetPct}% - 8px); color: ${c2.main};">
-                                    <span class="text-[9px] font-bold uppercase text-slate-700">Start 2</span>
-                                    <svg class="${arrowSize}" viewBox="0 0 24 24" fill="currentColor" stroke="#1e293b" stroke-width="1.5"><path d="M9 4h6v10h4l-7 7-7-7h4V4z"/></svg>
+                            <div class="relative ${boardWidthClass} ${isQuad ? 'h-4' : 'h-6'}">
+                                <div class="absolute bottom-0.5 translate-x-1/2 flex items-center gap-0.5 whitespace-nowrap" style="right: ${edgeOffsetPct}%; color: ${c2.main};">
+                                    <span class="${labelTextClass} font-bold uppercase text-slate-700">START ${f2Label}</span>
+                                    <svg class="${arrowSize} shrink-0" viewBox="0 0 24 24" fill="currentColor" stroke="#334155" stroke-width="1.5"><path d="M9 4h6v10h4l-7 7-7-7h4V4z"/></svg>
                                 </div>
                             </div>` : ''}
                             <div class="relative flex items-center justify-center ${arrowWrapperPad}">
-                                <div class="absolute left-0 -translate-y-1/2 flex flex-col items-center" style="top: ${edgeOffsetPct}%; color: ${c1.main};">
-                                    <span class="text-[8px] font-bold uppercase text-slate-700 leading-none mb-0.5">Start</span>
-                                    <svg class="${arrowSize}" viewBox="0 0 24 24" fill="currentColor" stroke="#1e293b" stroke-width="1.5"><path d="M4 9h10V5l7 7-7 7v-4H4V9z"/></svg>
-                                </div>
-                                <div class="a4-maze-grid ${boardWidthClass}" style="grid-template-columns: repeat(${size}, 1fr);">
-                                    ${cellsHTML}
-                                </div>
-                                <div class="absolute right-0 translate-y-1/2 flex flex-col items-center" style="bottom: ${edgeOffsetPct}%; color: ${c1.main};">
-                                    <span class="text-[8px] font-bold uppercase text-slate-700 leading-none mb-0.5">Meta</span>
-                                    <svg class="${arrowSize}" viewBox="0 0 24 24" fill="currentColor" stroke="#1e293b" stroke-width="1.5"><path d="M4 9h10V5l7 7-7 7v-4H4V9z"/></svg>
+                                <div class="relative ${boardWidthClass}">
+                                    <div class="absolute -translate-y-1/2 flex items-center gap-0.5 whitespace-nowrap" style="right: calc(100% + 4px); top: ${edgeOffsetPct}%; color: ${c1.main};">
+                                        <span class="${labelTextClass} font-bold uppercase text-slate-700">START ${f1Label}</span>
+                                        <svg class="${arrowSize} shrink-0" viewBox="0 0 24 24" fill="currentColor" stroke="#334155" stroke-width="1.5"><path d="M4 9h10V5l7 7-7 7v-4H4V9z"/></svg>
+                                    </div>
+                                    <div class="a4-maze-grid w-full" style="grid-template-columns: repeat(${size}, 1fr);">
+                                        ${cellsHTML}
+                                    </div>
+                                    <div class="absolute translate-y-1/2 flex items-center gap-0.5 whitespace-nowrap" style="left: calc(100% + 4px); bottom: ${edgeOffsetPct}%; color: ${c1.main};">
+                                        <svg class="${arrowSize} shrink-0" viewBox="0 0 24 24" fill="currentColor" stroke="#334155" stroke-width="1.5"><path d="M4 9h10V5l7 7-7 7v-4H4V9z"/></svg>
+                                        <span class="${labelTextClass} font-bold uppercase text-slate-700">META ${f1Label}</span>
+                                    </div>
                                 </div>
                             </div>
                             ${isDual ? `
-                            <div class="${boardWidthClass} flex justify-start ${isDouble ? 'h-4' : 'h-6'} items-start">
-                                <div class="flex items-center gap-0.5" style="margin-left: calc(${edgeOffsetPct}% - 8px); color: ${c2.main};">
-                                    <svg class="${arrowSize}" viewBox="0 0 24 24" fill="currentColor" stroke="#1e293b" stroke-width="1.5"><path d="M9 4h6v10h4l-7 7-7-7h4V4z"/></svg>
-                                    <span class="text-[9px] font-bold uppercase text-slate-700">Meta 2</span>
+                            <div class="relative ${boardWidthClass} ${isQuad ? 'h-4' : 'h-6'}">
+                                <div class="absolute top-0.5 -translate-x-1/2 flex items-center gap-0.5 whitespace-nowrap" style="left: ${edgeOffsetPct}%; color: ${c2.main};">
+                                    <svg class="${arrowSize} shrink-0" viewBox="0 0 24 24" fill="currentColor" stroke="#334155" stroke-width="1.5"><path d="M9 4h6v10h4l-7 7-7-7h4V4z"/></svg>
+                                    <span class="${labelTextClass} font-bold uppercase text-slate-700">META ${f2Label}</span>
                                 </div>
                             </div>` : ''}
                         </div>
@@ -1785,8 +1946,8 @@
             }
 
             function buildA4SheetHTML(isAnswerKey) {
-                const isDouble = worksheetConfig.boardsPerPage === 2;
-                if (!isDouble) {
+                const boardsCount = worksheetConfig.boardsPerPage;
+                if (boardsCount === 1) {
                     return `
                         <div class="a4-sheet">
                             <div class="flex-1 flex flex-col justify-center">
@@ -1797,7 +1958,8 @@
                             </div>
                         </div>
                     `;
-                } else {
+                }
+                if (boardsCount === 2) {
                     return `
                         <div class="a4-sheet">
                             <div class="flex-1 flex flex-col justify-center">
@@ -1813,6 +1975,18 @@
                         </div>
                     `;
                 }
+                return `
+                    <div class="a4-sheet relative">
+                        <div class="flex-1 grid grid-cols-2 grid-rows-2 gap-x-4 gap-y-3 items-center relative">
+                            <div class="pointer-events-none absolute inset-y-0 left-1/2 -translate-x-1/2 border-l border-dashed border-slate-300"></div>
+                            <div class="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 border-t border-dashed border-slate-300"></div>
+                            <div class="flex flex-col justify-center h-full px-1">${buildSingleMazeCardHTML(generatedWorksheets[0], 0, isAnswerKey)}</div>
+                            <div class="flex flex-col justify-center h-full px-1">${buildSingleMazeCardHTML(generatedWorksheets[1], 1, isAnswerKey)}</div>
+                            <div class="flex flex-col justify-center h-full px-1">${buildSingleMazeCardHTML(generatedWorksheets[2], 2, isAnswerKey)}</div>
+                            <div class="flex flex-col justify-center h-full px-1">${buildSingleMazeCardHTML(generatedWorksheets[3], 3, isAnswerKey)}</div>
+                        </div>
+                    </div>
+                `;
             }
 
             function renderA4Sheets() {
@@ -1884,24 +2058,32 @@
                     }
                 });
 
-                const b1Btn = document.getElementById('a4-boards-1');
-                const b2Btn = document.getElementById('a4-boards-2');
-                if (worksheetConfig.boardsPerPage === 1) {
-                    b1Btn.className = 'py-2 px-2 rounded-xl font-bold text-xs sm:text-sm bg-indigo-600 text-white shadow-sm transition-all';
-                    b2Btn.className = 'py-2 px-2 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all';
-                    document.getElementById('a4-boards-note').textContent = 'Duża plansza z miejscem na imię i datę.';
-                } else {
-                    b2Btn.className = 'py-2 px-2 rounded-xl font-bold text-xs sm:text-sm bg-indigo-600 text-white shadow-sm transition-all';
-                    b1Btn.className = 'py-2 px-2 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all';
-                    document.getElementById('a4-boards-note').textContent = 'Dwa różne losowe labirynty z miejscem na imię i linią cięcia.';
-                }
+                document.getElementById('a4-range-min').value = worksheetConfig.rangeMin;
+                document.getElementById('a4-range-max').value = worksheetConfig.rangeMax;
 
+                const boardBtns = [
+                    { id: 'a4-boards-1', count: 1, note: 'Jedna duża plansza na stronę A4.' },
+                    { id: 'a4-boards-2', count: 2, note: 'Dwa różne losowe labirynty z linią cięcia.' },
+                    { id: 'a4-boards-4', count: 4, note: 'Cztery różne losowe labirynty (układ 2×2 z liniami cięcia).' }
+                ];
+                boardBtns.forEach(item => {
+                    const el = document.getElementById(item.id);
+                    if (worksheetConfig.boardsPerPage === item.count) {
+                        el.className = 'py-2 px-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow-sm transition-all';
+                        document.getElementById('a4-boards-note').textContent = item.note;
+                    } else {
+                        el.className = 'py-2 px-1.5 rounded-xl font-bold text-xs bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all';
+                    }
+                });
+
+                document.getElementById('a4-include-student').checked = worksheetConfig.includeStudentFields;
                 document.getElementById('a4-include-key').checked = worksheetConfig.includeAnswerKey;
                 renderA4Sheets();
             }
 
             function openA4GeneratorModal() {
                 playSound('click');
+                syncSetupRangeFromInputs();
                 wasGameActiveBeforeA4 = isGameActive;
                 if (isGameActive) {
                     pauseTimer();
@@ -1910,6 +2092,8 @@
                 worksheetConfig.players = isTwoPlayerMode ? 2 : 1;
                 worksheetConfig.gridSize = gridSize;
                 worksheetConfig.factors = [...selectedFactors];
+                worksheetConfig.rangeMin = rangeMin;
+                worksheetConfig.rangeMax = rangeMax;
                 if (worksheetConfig.players === 2 && worksheetConfig.factors.length < 2) {
                     worksheetConfig.factors.push(worksheetConfig.factors[0] === 4 ? 6 : 4);
                 }
@@ -1942,8 +2126,44 @@
                 });
             });
 
+            const a4RangeMinInput = document.getElementById('a4-range-min');
+            const a4RangeMaxInput = document.getElementById('a4-range-max');
+
+            function syncA4RangeFromInputs() {
+                const normalized = normalizeRange(a4RangeMinInput.value, a4RangeMaxInput.value);
+                worksheetConfig.rangeMin = normalized.min;
+                worksheetConfig.rangeMax = normalized.max;
+                a4RangeMinInput.value = worksheetConfig.rangeMin;
+                a4RangeMaxInput.value = worksheetConfig.rangeMax;
+                regenerateWorksheets();
+                renderA4Sheets();
+            }
+
+            a4RangeMinInput.addEventListener('change', syncA4RangeFromInputs);
+            a4RangeMaxInput.addEventListener('change', syncA4RangeFromInputs);
+
+            document.querySelectorAll('.a4-range-preset').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    playSound('click');
+                    const [minV, maxV] = btn.dataset.a4Range.split(',').map(Number);
+                    worksheetConfig.rangeMin = minV;
+                    worksheetConfig.rangeMax = maxV;
+                    a4RangeMinInput.value = minV;
+                    a4RangeMaxInput.value = maxV;
+                    regenerateWorksheets();
+                    renderA4Sheets();
+                });
+            });
+
             document.getElementById('a4-boards-1').addEventListener('click', () => { playSound('click'); setA4BoardsPerPage(1); });
             document.getElementById('a4-boards-2').addEventListener('click', () => { playSound('click'); setA4BoardsPerPage(2); });
+            document.getElementById('a4-boards-4').addEventListener('click', () => { playSound('click'); setA4BoardsPerPage(4); });
+
+            document.getElementById('a4-include-student').addEventListener('change', (e) => {
+                playSound('click');
+                worksheetConfig.includeStudentFields = e.target.checked;
+                renderA4Sheets();
+            });
 
             document.getElementById('a4-include-key').addEventListener('change', (e) => {
                 playSound('click');
