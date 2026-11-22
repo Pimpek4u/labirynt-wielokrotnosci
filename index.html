@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labirynt Tabliczki Mnożenia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <style>
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: linear-gradient(135deg, #e0e7ff 0%, #f0f9ff 50%, #fae8ff 100%);
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Stylizacja przycisków wyboru czynnika */
+        .factor-btn {
+            background: #f8fafc;
+            border: 2px solid #cbd5e1;
+            box-shadow: 0 3px 6px rgba(15, 23, 42, 0.06);
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            color: #334155;
+        }
+        .factor-btn:hover {
+            transform: translateY(-2px);
+            border-color: #94a3b8;
+            background: #ffffff;
+        }
+        .factor-btn:active {
+            transform: scale(0.95);
+        }
+        .factor-btn.active-selected {
+            color: #ffffff;
+            transform: scale(1.06);
+        }
+
+        /* Stylizacja głównych przycisków akcji */
+        .action-btn {
+            border: 1px solid rgba(15, 23, 42, 0.12);
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+            transition: all 0.15s ease;
+        }
+        .action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 14px rgba(15, 23, 42, 0.12);
+        }
+        .action-btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 4px rgba(15, 23, 42, 0.08);
+        }
+
+        /* Siatka labiryntu */
+        .maze-grid {
+            display: grid;
+            border: 4px solid #1e293b;
+            background-color: #ffffff;
+            box-shadow: 0 12px 30px rgba(30, 41, 59, 0.18);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .maze-cell {
+            aspect-ratio: 1 / 1;
+            border: 1.5px solid #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #1e293b;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s, color 0.2s;
+            position: relative;
+        }
+
+        .maze-cell:hover:not(.is-visited) {
+            background-color: #f1f5f9;
+        }
+
+        .maze-cell.current-pulse {
+            animation: pulse-cell 1.5s infinite;
+        }
+
+        .maze-cell.error {
+            background-color: #ef4444 !important;
+            color: white !important;
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        .maze-cell.hint {
+            background-color: #fde047 !important;
+            color: #1e293b !important;
+            box-shadow: inset 0 0 0 3px #ca8a04 !important;
+        }
+
+        @keyframes pulse-cell {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(0.93); }
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(3px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        /* Strzałki Start i Meta */
+        .arrow-indicator-x {
+            filter: drop-shadow(2px 2px 0px #1e293b);
+            animation: bounce-x 1s infinite alternate;
+        }
+        .arrow-indicator-y {
+            filter: drop-shadow(2px 2px 0px #1e293b);
+            animation: bounce-y 1s infinite alternate;
+        }
+
+        @keyframes bounce-x {
+            from { transform: translateX(0); }
+            to { transform: translateX(5px); }
+        }
+        @keyframes bounce-y {
+            from { transform: translateY(0); }
+            to { transform: translateY(5px); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-2 sm:p-4 text-slate-900">
+
+    <!-- Ekran Ustawień / Wyboru Liczb (Nowoczesny styl) -->
+    <div id="setup-modal" class="w-full max-w-2xl bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-[2rem] p-5 sm:p-8 shadow-[0_20px_50px_rgba(30,41,59,0.12)] text-center relative overflow-hidden">
+        <div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-blue-500 via-indigo-500 to-fuchsia-500"></div>
+
+        <div class="flex justify-between items-center mb-4 mt-1">
+            <span class="text-xs font-bold uppercase tracking-widest text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full">Ustawienia labiryntu</span>
+            <button id="btn-sound-setup" class="px-3.5 py-1.5 rounded-full font-semibold text-xs sm:text-sm bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors">
+                🔊 Dźwięk: WŁ
+            </button>
+        </div>
+
+        <h1 class="text-2xl sm:text-3xl font-bold mb-1 text-slate-800 tracking-tight">Konfiguracja gry</h1>
+        <p class="text-xs sm:text-sm text-slate-500 mb-5">Wybierz tryb, rozmiar planszy, mnożniki oraz kolory swoich tras</p>
+
+        <!-- Tryb gry oraz Rozmiar planszy -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5 text-left">
+            <!-- Tryb gry -->
+            <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-3">
+                <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Tryb rozgrywki</div>
+                <div class="grid grid-cols-2 gap-1.5">
+                    <button id="mode-1p" class="py-2 px-2.5 rounded-xl font-bold text-xs sm:text-sm bg-indigo-600 text-white shadow-sm transition-all">
+                        👤 1 Gracz
+                    </button>
+                    <button id="mode-2p" class="py-2 px-2.5 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all">
+                        👥 2 Graczy
+                    </button>
+                </div>
+            </div>
+
+            <!-- Wielkość planszy -->
+            <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-3">
+                <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Wielkość planszy</div>
+                <div class="grid grid-cols-3 gap-1.5" id="grid-size-selector">
+                    <button data-size="8" class="size-btn py-2 px-2 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all">
+                        8×8
+                    </button>
+                    <button data-size="10" class="size-btn py-2 px-2 rounded-xl font-bold text-xs sm:text-sm bg-indigo-600 text-white shadow-sm transition-all">
+                        10×10
+                    </button>
+                    <button data-size="12" class="size-btn py-2 px-2 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all">
+                        12×12
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Kółka z liczbami 2-12 -->
+        <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 text-left">Wybierz mnożniki (1 lub 2 liczby)</div>
+        <div id="factor-buttons" class="grid grid-cols-6 gap-2 sm:gap-2.5 max-w-lg mx-auto mb-5">
+            <!-- Generowane przez JS -->
+        </div>
+
+        <!-- Wybór kolorów dla wybranych tras -->
+        <div id="color-pickers-container" class="flex flex-col sm:flex-row justify-center gap-3 mb-5">
+            <!-- Generowane dynamicznie przez JS -->
+        </div>
+
+        <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5 mb-6 text-xs sm:text-sm text-slate-600 leading-relaxed text-left flex gap-3 items-start">
+            <span class="text-xl leading-none mt-0.5">🧭</span>
+            <div>
+                <p class="font-bold text-slate-800 mb-0.5">Zasady i sterowanie</p>
+                <p id="rules-text">Łącz sąsiadujące krawędziami pola od strzałki <strong>Start</strong> do <strong>Meta</strong> (bez ruchów na skos). Możesz klikać pola lub używać klawiszy strzałek / WASDX.</p>
+            </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3 justify-center">
+            <button id="btn-cancel-setup" class="hidden action-btn px-6 py-3 rounded-2xl font-bold text-base bg-slate-100 text-slate-700 hover:bg-slate-200 w-full sm:w-40">
+                Wróć do gry
+            </button>
+            <button id="btn-start-game" class="action-btn px-8 py-3 rounded-2xl font-bold text-base sm:text-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 w-full sm:w-56">
+                Rozpocznij grę →
+            </button>
+        </div>
+    </div>
+
+    <!-- Główny Ekran Gry -->
+    <div id="game-screen" class="hidden w-full max-w-3xl flex flex-col items-center">
+        
+        <!-- Górny pasek informacyjny -->
+        <div class="w-full flex flex-wrap items-center justify-between gap-2 bg-white border-4 border-slate-800 rounded-2xl px-4 py-3 mb-3 shadow-md">
+            <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+                <span class="text-base sm:text-xl font-bold text-slate-800">Szukaj wielokrotności:</span>
+                <div id="active-factors-badges" class="flex items-center gap-2">
+                    <!-- Odznaki z kolorami tras generowane przez JS -->
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2 sm:gap-3 text-sm sm:text-base font-bold">
+                <div id="mistakes-badge" class="bg-rose-100 text-rose-800 px-3 py-1 rounded-xl border-2 border-rose-300">
+                    Błędy: <span id="mistakes-count">0</span>
+                </div>
+                <div class="bg-sky-100 text-sky-800 px-3 py-1 rounded-xl border-2 border-sky-300">
+                    Czas: <span id="timer-display">00:00</span>
+                </div>
+                <button id="btn-sound-game" class="px-2.5 py-1 rounded-xl border-2 border-slate-300 bg-slate-100 hover:bg-slate-200 text-lg" title="Włącz/wyłącz dźwięk">
+                    🔊
+                </button>
+            </div>
+        </div>
+
+        <!-- Legenda sterowania w trybie 2 Graczy -->
+        <div id="two-player-bar" class="hidden w-full grid grid-cols-2 gap-2 mb-2 text-xs sm:text-sm font-bold">
+            <div id="p1-hud" class="bg-white/90 border-2 border-slate-300 rounded-xl px-3 py-1.5 flex items-center justify-between shadow-sm">
+                <span class="flex items-center gap-1.5">
+                    <span id="p1-dot" class="w-3 h-3 rounded-full inline-block"></span>
+                    Gracz 1 (<span id="p1-factor-label">×7</span>)
+                </span>
+                <span class="bg-slate-100 border border-slate-300 px-2 py-0.5 rounded text-xs text-slate-600">W A S D X</span>
+            </div>
+            <div id="p2-hud" class="bg-white/90 border-2 border-slate-300 rounded-xl px-3 py-1.5 flex items-center justify-between shadow-sm">
+                <span class="flex items-center gap-1.5">
+                    <span id="p2-dot" class="w-3 h-3 rounded-full inline-block"></span>
+                    Gracz 2 (<span id="p2-factor-label">×4</span>)
+                </span>
+                <span class="bg-slate-100 border border-slate-300 px-2 py-0.5 rounded text-xs text-slate-600">Strzałki ⬆️⬅️⬇️➡️</span>
+            </div>
+        </div>
+
+        <!-- Kontener planszy ze strzałkami -->
+        <div class="relative w-full flex flex-col items-center justify-center my-1">
+            
+            <!-- Górna strefa strzałki dla Trasy 2 (Prawy górny róg - wejście z góry) -->
+            <div class="w-full max-w-[540px] flex justify-end px-1 sm:px-2 h-8 items-end">
+                <div id="arrow-start-2" class="hidden arrow-indicator-y mr-[2%] mb-1" title="Start Trasy 2">
+                    <svg id="svg-start-2" class="w-7 h-7 sm:w-8 sm:h-8" viewBox="0 0 24 24" fill="currentColor" stroke="#1e293b" stroke-width="1.5">
+                        <path d="M9 4h6v10h4l-7 7-7-7h4V4z"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Środkowy rząd: Strzałka Start 1 | Plansza | Strzałka Meta 1 -->
+            <div class="relative w-full flex items-center justify-center px-8 sm:px-12">
+                
+                <!-- Strzałka START 1 (Lewy górny róg) -->
+                <div id="arrow-start-1" class="absolute left-0 sm:left-2 top-[5%] -translate-y-1/2 z-10 arrow-indicator-x" title="Start Trasy 1">
+                    <svg id="svg-start-1" class="w-7 h-7 sm:w-10 sm:h-10" viewBox="0 0 24 24" fill="currentColor" stroke="#1e293b" stroke-width="1.5">
+                        <path d="M4 9h10V5l7 7-7 7v-4H4V9z"/>
+                    </svg>
+                </div>
+
+                <!-- Siatka planszy -->
+                <div id="maze-board" class="maze-grid w-full max-w-[540px]">
+                    <!-- Komórki generowane przez JS -->
+                </div>
+
+                <!-- Strzałka META 1 (Prawy dolny róg) -->
+                <div id="arrow-end-1" class="absolute right-0 sm:right-2 bottom-[5%] translate-y-1/2 z-10 arrow-indicator-x" title="Meta Trasy 1">
+                    <svg id="svg-end-1" class="w-7 h-7 sm:w-10 sm:h-10" viewBox="0 0 24 24" fill="currentColor" stroke="#1e293b" stroke-width="1.5">
+                        <path d="M4 9h10V5l7 7-7 7v-4H4V9z"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Dolna strefa strzałki dla Trasy 2 (Lewy dolny róg - wyjście w dół) -->
+            <div class="w-full max-w-[540px] flex justify-start px-1 sm:px-2 h-8 items-start">
+                <div id="arrow-end-2" class="hidden arrow-indicator-y ml-[2%] mt-1" title="Meta Trasy 2">
+                    <svg id="svg-end-2" class="w-7 h-7 sm:w-8 sm:h-8" viewBox="0 0 24 24" fill="currentColor" stroke="#1e293b" stroke-width="1.5">
+                        <path d="M9 4h6v10h4l-7 7-7-7h4V4z"/>
+                    </svg>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Pasek komunikatów -->
+        <div id="status-message" class="min-h-[2rem] my-1 px-2 text-center font-bold text-sm sm:text-lg text-slate-800 transition-opacity">
+            Kliknij pole startowe przy strzałce!
+        </div>
+
+        <!-- Dolne przyciski sterujące -->
+        <div class="flex flex-wrap justify-center gap-2 sm:gap-2.5 mt-2 w-full">
+            <button id="btn-change-factor" class="action-btn px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-800 hover:bg-slate-100">
+                ⚙️ Ustawienia
+            </button>
+            <button id="btn-undo" class="action-btn px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-amber-200 text-slate-900 hover:bg-amber-300">
+                ↩️ Cofnij
+            </button>
+            <button id="btn-hint" class="action-btn px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-sky-200 text-slate-900 hover:bg-sky-300">
+                💡 Podpowiedź
+            </button>
+            <button id="btn-reveal" class="action-btn px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-violet-200 text-violet-950 hover:bg-violet-300">
+                👁️ Pokaż planszę
+            </button>
+            <button id="btn-new-maze" class="action-btn px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-emerald-300 text-slate-900 hover:bg-emerald-400">
+                🔄 Nowa plansza
+            </button>
+        </div>
+    </div>
+
+    <!-- Ekran Wygranej (Nowoczesny Modal z opcją zamknięcia) -->
+    <div id="victory-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-md flex items-center justify-center p-4 z-50">
+        <div class="bg-white border border-slate-200 rounded-[2rem] p-6 sm:p-8 max-w-md w-full text-center shadow-[0_25px_60px_rgba(15,23,42,0.25)] relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-emerald-400 via-teal-500 to-blue-500"></div>
+            
+            <!-- Przycisk zamknięcia okienka X -->
+            <button id="btn-win-close-x" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold flex items-center justify-center transition-colors" title="Zamknij i zobacz planszę">
+                ✕
+            </button>
+
+            <div class="w-16 h-16 mx-auto mb-3 rounded-2xl bg-amber-100 text-amber-500 flex items-center justify-center text-4xl shadow-inner">
+                🏆
+            </div>
+            <h2 id="win-title" class="text-2xl sm:text-3xl font-bold text-slate-800 mb-1">Zadanie ukończone!</h2>
+            <p id="win-description" class="text-slate-500 text-sm sm:text-base mb-5">Udało Ci się przejść cały labirynt!</p>
+            
+            <div class="grid grid-cols-2 gap-3 mb-5">
+                <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5">
+                    <div class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-0.5">Czas przejścia</div>
+                    <div id="win-time" class="text-2xl font-bold text-slate-800">00:24</div>
+                </div>
+                <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5">
+                    <div class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-0.5">Liczba błędów</div>
+                    <div id="win-mistakes" class="text-2xl font-bold text-slate-800">0</div>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-2.5">
+                <button id="btn-win-inspect" class="action-btn w-full py-2.5 rounded-2xl font-bold text-sm sm:text-base bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100">
+                    🗺️ Zamknij i zobacz trasy na planszy
+                </button>
+                <div class="flex flex-col sm:flex-row gap-2.5 justify-center">
+                    <button id="btn-win-change" class="action-btn px-4 py-3 rounded-2xl font-bold text-sm bg-slate-100 text-slate-700 hover:bg-slate-200 flex-1">
+                        ⚙️ Ustawienia
+                    </button>
+                    <button id="btn-win-next" class="action-btn px-4 py-3 rounded-2xl font-bold text-sm bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 flex-1">
+                        Następna plansza →
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- PALETA KOLORÓW DO WYBORU ---
+        const COLOR_PALETTE = [
+            { id: 'blue',    name: 'Błękitny',    main: '#2563eb', fill: '#60a5fa', soft: '#dbeafe', dark: '#1e3a8a', text: '#ffffff' },
+            { id: 'fuchsia', name: 'Fioletowy',   main: '#c026d3', fill: '#e879f9', soft: '#fae8ff', dark: '#701a75', text: '#ffffff' },
+            { id: 'emerald', name: 'Szmaragdowy', main: '#059669', fill: '#34d399', soft: '#d1fae5', dark: '#064e3b', text: '#ffffff' },
+            { id: 'amber',   name: 'Bursztynowy', main: '#d97706', fill: '#fbbf24', soft: '#fef3c7', dark: '#78350f', text: '#ffffff' },
+            { id: 'rose',    name: 'Koralowy',    main: '#e11d48', fill: '#fb7185', soft: '#ffe4e6', dark: '#881337', text: '#ffffff' },
+            { id: 'indigo',  name: 'Indygo',      main: '#4f46e5', fill: '#818cf8', soft: '#e0e7ff', dark: '#312e81', text: '#ffffff' }
+        ];
+
+        // --- KONFIGURACJA I STAN GRY ---
+        let gridSize = 10;              // 8, 10 lub 12
+        let isTwoPlayerMode = false;    // Tryb 1 gracza lub 2 graczy
+        let selectedFactors = [7];      // Tablica 1 lub 2 wybranych liczb
+        let trackColors = [COLOR_PALETTE[0], COLOR_PALETTE[1]]; // Kolor Trasy 1 i Trasy 2
+        let soundEnabled = true;
+
+        let gridData = [];
+        let solutionPath1 = [];
+        let solutionPath2 = [];
+        let playerPath1 = [];
+        let playerPath2 = [];
+        let moveHistory = [];
+
+        let mistakes = 0;
+        let mistakesP1 = 0;
+        let mistakesP2 = 0;
+        let timerInterval = null;
+        let secondsElapsed = 0;
+        let isGameActive = false;
+        let hasGameStartedBefore = false;
+        let isBoardRevealed = false;
+
+        // --- DŹWIĘKI (Tone.js) ---
+        // --- INICJALIZACJA UI WYBORU LICZB, KOLORÓW, ROZMIARU I TRYBU ---
+        const factorButtonsContainer = document.getElementById('factor-buttons');
+        for (let i = 2; i <= 12; i++) {
+            const btn = document.createElement('button');
+            btn.textContent = i;
+            btn.dataset.val = i;
+            btn.className = 'factor-btn aspect-square w-full rounded-2xl text-base sm:text-xl font-bold flex items-center justify-center';
+            btn.addEventListener('click', () => {
+                handleFactorSelect(i);
+                playSound('click');
+            });
+            factorButtonsContainer.appendChild(btn);
+        }
+
+        // Wybór trybu gry (1 Gracz vs 2 Graczy)
+        const btnMode1P = document.getElementById('mode-1p');
+        const btnMode2P = document.getElementById('mode-2p');
+
+        function setGameMode(twoPlayers) {
+            isTwoPlayerMode = twoPlayers;
+            if (isTwoPlayerMode) {
+                btnMode2P.className = 'py-2 px-2.5 rounded-xl font-bold text-xs sm:text-sm bg-indigo-600 text-white shadow-sm transition-all';
+                btnMode1P.className = 'py-2 px-2.5 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all';
+                // W trybie 2 graczy automatycznie zapewnij 2 liczby
+                if (selectedFactors.length < 2) {
+                    const second = selectedFactors[0] === 7 ? 4 : 7;
+                    selectedFactors.push(second);
+                }
+                document.getElementById('rules-text').innerHTML = 
+                    '<strong>Gracz 1 (Trasa 1):</strong> steruje klawiszami <strong>W, A, S, D, X</strong> (lub myszą).<br>' +
+                    '<strong>Gracz 2 (Trasa 2):</strong> steruje <strong>strzałkami ⬆️⬅️⬇️➡️</strong> (lub myszą). Ścieżki przetną się na wspólnej wielokrotności!';
+            } else {
+                btnMode1P.className = 'py-2 px-2.5 rounded-xl font-bold text-xs sm:text-sm bg-indigo-600 text-white shadow-sm transition-all';
+                btnMode2P.className = 'py-2 px-2.5 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all';
+                document.getElementById('rules-text').innerHTML = 
+                    'Łącz sąsiadujące krawędziami pola od strzałki <strong>Start</strong> do <strong>Meta</strong> (bez ruchów na skos). Możesz klikać pola lub używać strzałek / klawiszy WASDX.';
+            }
+            updateSetupUI();
+        }
+
+        btnMode1P.addEventListener('click', () => { playSound('click'); setGameMode(false); });
+        btnMode2P.addEventListener('click', () => { playSound('click'); setGameMode(true); });
+
+        // Wybór wielkości planszy (8x8, 10x10, 12x12)
+        document.querySelectorAll('.size-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                playSound('click');
+                gridSize = parseInt(btn.dataset.size);
+                document.querySelectorAll('.size-btn').forEach(b => {
+                    if (parseInt(b.dataset.size) === gridSize) {
+                        b.className = 'size-btn py-2 px-2 rounded-xl font-bold text-xs sm:text-sm bg-indigo-600 text-white shadow-sm transition-all';
+                    } else {
+                        b.className = 'size-btn py-2 px-2 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all';
+                    }
+                });
+            });
+        });
+
+        function handleFactorSelect(num) {
+            const idx = selectedFactors.indexOf(num);
+            if (idx !== -1) {
+                const minAllowed = isTwoPlayerMode ? 2 : 1;
+                if (selectedFactors.length > minAllowed) {
+                    selectedFactors.splice(idx, 1);
+                }
+            } else {
+                if (selectedFactors.length < 2) {
+                    selectedFactors.push(num);
+                } else {
+                    selectedFactors[1] = num;
+                }
+            }
+            updateSetupUI();
+        }
+
+        function setTrackColor(trackIdx, colorObj) {
+            trackColors[trackIdx] = colorObj;
+            // Jeśli oba mają identyczny kolor, zamień drugi na inny z palety
+            if (trackColors[0].id === trackColors[1].id) {
+                const alt = COLOR_PALETTE.find(c => c.id !== colorObj.id);
+                trackColors[trackIdx === 0 ? 1 : 0] = alt;
+            }
+            updateSetupUI();
+        }
+
+        function updateSetupUI() {
+            const c1 = trackColors[0];
+            const c2 = trackColors[1];
+
+            document.querySelectorAll('.factor-btn').forEach(btn => {
+                const val = parseInt(btn.dataset.val);
+                btn.classList.remove('active-selected');
+                btn.style.background = '';
+                btn.style.borderColor = '';
+                btn.style.boxShadow = '';
+
+                if (selectedFactors[0] === val) {
+                    btn.classList.add('active-selected');
+                    btn.style.background = c1.main;
+                    btn.style.borderColor = c1.dark;
+                    btn.style.boxShadow = `0 6px 14px ${c1.main}55`;
+                } else if (selectedFactors[1] === val) {
+                    btn.classList.add('active-selected');
+                    btn.style.background = c2.main;
+                    btn.style.borderColor = c2.dark;
+                    btn.style.boxShadow = `0 6px 14px ${c2.main}55`;
+                }
+            });
+
+            // Renderowanie selektorów kolorów dla wybranych liczb
+            const colorContainer = document.getElementById('color-pickers-container');
+            colorContainer.innerHTML = '';
+
+            selectedFactors.forEach((factor, idx) => {
+                const currentColor = trackColors[idx];
+                const labelText = isTwoPlayerMode 
+                    ? `Gracz ${idx + 1} (×${factor})` 
+                    : `Trasa ${idx + 1} (×${factor})`;
+
+                const box = document.createElement('div');
+                box.className = 'bg-slate-50 border border-slate-200/90 rounded-2xl px-3.5 py-2.5 flex flex-col items-center gap-1.5 flex-1';
+                
+                const title = document.createElement('div');
+                title.className = 'text-xs font-bold text-slate-700 flex items-center gap-1.5';
+                title.innerHTML = `<span class="w-3 h-3 rounded-full inline-block" style="background:${currentColor.main}"></span> ${labelText}`;
+                box.appendChild(title);
+
+                const swatches = document.createElement('div');
+                swatches.className = 'flex items-center gap-1.5';
+                COLOR_PALETTE.forEach(col => {
+                    const dot = document.createElement('button');
+                    dot.type = 'button';
+                    dot.title = col.name;
+                    dot.className = `w-6 h-6 rounded-full transition-transform ${col.id === currentColor.id ? 'scale-125 ring-2 ring-offset-2 ring-slate-800' : 'opacity-75 hover:opacity-100 hover:scale-110'}`;
+                    dot.style.backgroundColor = col.main;
+                    dot.addEventListener('click', () => {
+                        playSound('click');
+                        setTrackColor(idx, col);
+                    });
+                    swatches.appendChild(dot);
+                });
+                box.appendChild(swatches);
+                colorContainer.appendChild(box);
+            });
+        }
+        updateSetupUI();
+
+        // --- FUNKCJE POMOCNICZE MATEMATYCZNE ---
+        // --- GENERATOR LABIRYNTU (1 LUB 2 TRASY, DOWOLNY ROZMIAR) ---
+        function generatePath(startR, startC, endR, endC) {
+            let path = [];
+            let visited = Array.from({ length: gridSize }, () => Array(gridSize).fill(false));
+
+            function dfs(r, c) {
+                path.push({ r, c });
+                visited[r][c] = true;
+
+                if (r === endR && c === endC) return true;
+
+                const dirs = [
+                    { dr: 0, dc: 1 },
+                    { dr: 1, dc: 0 },
+                    { dr: 0, dc: -1 },
+                    { dr: -1, dc: 0 }
+                ];
+
+                for (let i = dirs.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [dirs[i], dirs[j]] = [dirs[j], dirs[i]];
+                }
+
+                for (let { dr, dc } of dirs) {
+                    const nr = r + dr;
+                    const nc = c + dc;
+
+                    if (nr >= 0 && nr < gridSize && nc >= 0 && nc < gridSize && !visited[nr][nc]) {
+                        let adjacentVisitedCount = 0;
+                        for (let cd of dirs) {
+                            const ar = nr + cd.dr;
+                            const ac = nc + cd.dc;
+                            if (ar >= 0 && ar < gridSize && ac >= 0 && ac < gridSize && visited[ar][ac]) {
+                                adjacentVisitedCount++;
+                            }
+                        }
+                        if (adjacentVisitedCount <= 1) {
+                            if (dfs(nr, nc)) return true;
+                        }
+                    }
+                }
+
+                path.pop();
+                visited[r][c] = false;
+                return false;
+            }
+
+            dfs(startR, startC);
+            return path;
+        }
+
+        function generateMaze() {
+            const f1 = selectedFactors[0];
+            const isDual = selectedFactors.length === 2;
+            const f2 = isDual ? selectedFactors[1] : null;
+
+            solutionPath1 = generatePath(0, 0, gridSize - 1, gridSize - 1);
+            solutionPath2 = [];
+
+            if (isDual) {
+                let attempts = 0;
+                while (attempts < 60) {
+                    const candidate = generatePath(0, gridSize - 1, gridSize - 1, 0);
+                    const touchesCorners = candidate.some(p => (p.r === 0 && p.c === 0) || (p.r === gridSize - 1 && p.c === gridSize - 1));
+                    if (!touchesCorners && candidate.length > 0) {
+                        solutionPath2 = candidate;
+                        break;
+                    }
+                    attempts++;
+                }
+                if (solutionPath2.length === 0) {
+                    solutionPath2 = generatePath(0, gridSize - 1, gridSize - 1, 0);
+                }
+            }
+
+            const mult1 = Array.from({ length: 12 }, (_, i) => f1 * (i + 1));
+            const mult2 = isDual ? Array.from({ length: 12 }, (_, i) => f2 * (i + 1)) : [];
+            
+            let commonMults = [];
+            if (isDual) {
+                const baseLcm = lcm(f1, f2);
+                for (let k = 1; k <= 6; k++) {
+                    if (baseLcm * k <= 144) commonMults.push(baseLcm * k);
+                }
+                if (commonMults.length === 0) commonMults.push(baseLcm);
+            }
+
+            const maxVal = Math.max(85, f1 * 10, isDual ? f2 * 10 : 0);
+            const nonMultiples = [];
+            for (let n = 1; n <= maxVal; n++) {
+                if (n % f1 !== 0 && (!isDual || n % f2 !== 0)) {
+                    nonMultiples.push(n);
+                }
+            }
+
+            gridData = Array.from({ length: gridSize }, () => Array(gridSize).fill(0));
+
+            for (let r = 0; r < gridSize; r++) {
+                for (let c = 0; c < gridSize; c++) {
+                    const inP1 = solutionPath1.some(p => p.r === r && p.c === c);
+                    const inP2 = isDual && solutionPath2.some(p => p.r === r && p.c === c);
+
+                    if (inP1 && inP2) {
+                        gridData[r][c] = commonMults[Math.floor(Math.random() * commonMults.length)];
+                    } else if (inP1) {
+                        const pure1 = isDual ? mult1.filter(x => x % f2 !== 0) : mult1;
+                        const pool = pure1.length > 0 ? pure1 : mult1;
+                        gridData[r][c] = pool[Math.floor(Math.random() * pool.length)];
+                    } else if (inP2) {
+                        const pure2 = mult2.filter(x => x % f1 !== 0);
+                        const pool = pure2.length > 0 ? pure2 : mult2;
+                        gridData[r][c] = pool[Math.floor(Math.random() * pool.length)];
+                    } else {
+                        if (Math.random() < 0.1) {
+                            const trapPool = isDual && Math.random() < 0.5 ? mult2 : mult1;
+                            gridData[r][c] = trapPool[Math.floor(Math.random() * trapPool.length)];
+                        } else {
+                            gridData[r][c] = nonMultiples[Math.floor(Math.random() * nonMultiples.length)];
+                        }
+                    }
+                }
+            }
+        }
+
+        // --- RENDEROWANIE PLANSZY (DYNAMICZNE KOLORY I ROZMIAR) ---
+        function renderBoard() {
+            const board = document.getElementById('maze-board');
+            board.innerHTML = '';
+            board.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+
+            // Dopasowanie rozmiaru czcionki do rozmiaru siatki
+            if (gridSize === 8) {
+                board.className = 'maze-grid w-full max-w-[520px] text-xl sm:text-3xl';
+            } else if (gridSize === 12) {
+                board.className = 'maze-grid w-full max-w-[560px] text-sm sm:text-xl md:text-2xl';
+            } else {
+                board.className = 'maze-grid w-full max-w-[540px] text-lg sm:text-2xl md:text-3xl';
+            }
+
+            const c1 = trackColors[0];
+            const c2 = trackColors[1];
+
+            for (let r = 0; r < gridSize; r++) {
+                for (let c = 0; c < gridSize; c++) {
+                    const cellDiv = document.createElement('div');
+                    cellDiv.className = 'maze-cell';
+                    cellDiv.textContent = gridData[r][c];
+                    cellDiv.dataset.r = r;
+                    cellDiv.dataset.c = c;
+
+                    const idx1 = playerPath1.findIndex(p => p.r === r && p.c === c);
+                    const idx2 = playerPath2.findIndex(p => p.r === r && p.c === c);
+
+                    // Podgląd pełnej trasy ("Pokaż planszę")
+                    if (isBoardRevealed) {
+                        const inSol1 = solutionPath1.some(p => p.r === r && p.c === c);
+                        const inSol2 = solutionPath2.some(p => p.r === r && p.c === c);
+                        if (inSol1 && inSol2) {
+                            cellDiv.style.background = `linear-gradient(135deg, ${c1.soft} 50%, ${c2.soft} 50%)`;
+                            cellDiv.style.boxShadow = `inset 0 0 0 3px ${c1.main}`;
+                            cellDiv.style.color = '#1e293b';
+                        } else if (inSol1) {
+                            cellDiv.style.backgroundColor = c1.soft;
+                            cellDiv.style.boxShadow = `inset 0 0 0 3px ${c1.main}`;
+                            cellDiv.style.color = c1.dark;
+                        } else if (inSol2) {
+                            cellDiv.style.backgroundColor = c2.soft;
+                            cellDiv.style.boxShadow = `inset 0 0 0 3px ${c2.main}`;
+                            cellDiv.style.color = c2.dark;
+                        }
+                    }
+
+                    // Pola zaznaczone przez gracza/graczy
+                    if (idx1 !== -1 && idx2 !== -1) {
+                        cellDiv.classList.add('is-visited');
+                        cellDiv.style.background = `linear-gradient(135deg, ${c1.main} 50%, ${c2.main} 50%)`;
+                        cellDiv.style.color = '#ffffff';
+                        cellDiv.style.textShadow = '0 1px 2px rgba(0,0,0,0.65)';
+                    } else if (idx1 !== -1) {
+                        cellDiv.classList.add('is-visited');
+                        cellDiv.style.background = '';
+                        cellDiv.style.backgroundColor = c1.fill;
+                        cellDiv.style.color = '#0f172a';
+                    } else if (idx2 !== -1) {
+                        cellDiv.classList.add('is-visited');
+                        cellDiv.style.background = '';
+                        cellDiv.style.backgroundColor = c2.fill;
+                        cellDiv.style.color = '#0f172a';
+                    }
+
+                    // Obwódka aktualnego pola (głowy trasy)
+                    const isHead1 = idx1 !== -1 && idx1 === playerPath1.length - 1;
+                    const isHead2 = idx2 !== -1 && idx2 === playerPath2.length - 1;
+
+                    if (isHead1 && isHead2) {
+                        cellDiv.classList.add('current-pulse');
+                        cellDiv.style.boxShadow = 'inset 0 0 0 4px #ffffff';
+                    } else if (isHead1) {
+                        cellDiv.classList.add('current-pulse');
+                        cellDiv.style.boxShadow = `inset 0 0 0 4px ${c1.dark}`;
+                    } else if (isHead2) {
+                        cellDiv.classList.add('current-pulse');
+                        cellDiv.style.boxShadow = `inset 0 0 0 4px ${c2.dark}`;
+                    }
+
+                    cellDiv.addEventListener('click', () => handleCellClick(r, c, cellDiv));
+                    board.appendChild(cellDiv);
+                }
+            }
+        }
+
+        // --- LOGIKA RUCHU (KLIKNIĘCIA + KLAWIATURA WASDX ORAZ STRZAŁKI) ---
+        function isOrthogonal(p1, p2) {
+            return Math.abs(p1.r - p2.r) + Math.abs(p1.c - p2.c) === 1;
+        }
+
+        function handleCellClick(r, c, cellElement) {
+            if (!isGameActive) return;
+
+            const value = gridData[r][c];
+            const f1 = selectedFactors[0];
+            const isDual = selectedFactors.length === 2;
+            const f2 = isDual ? selectedFactors[1] : null;
+
+            const isMult1 = (value % f1 === 0);
+            const isMult2 = isDual && (value % f2 === 0);
+
+            const isDone1 = playerPath1.length > 0 && playerPath1[playerPath1.length - 1].r === gridSize - 1 && playerPath1[playerPath1.length - 1].c === gridSize - 1;
+            const isDone2 = !isDual || (playerPath2.length > 0 && playerPath2[playerPath2.length - 1].r === gridSize - 1 && playerPath2[playerPath2.length - 1].c === 0);
+
+            // Start Trasy 1 (0,0)
+            if (r === 0 && c === 0 && playerPath1.length === 0) {
+                playerPath1.push({ r, c });
+                moveHistory.push(1);
+                playSound('step');
+                setStatusMessage(`Rozpoczęto trasę 1 (×${f1})!`, 'text-slate-800');
+                renderBoard();
+                return;
+            }
+
+            // Start Trasy 2 (0, gridSize - 1)
+            if (isDual && r === 0 && c === gridSize - 1 && playerPath2.length === 0) {
+                playerPath2.push({ r, c });
+                moveHistory.push(2);
+                playSound('step');
+                setStatusMessage(`Rozpoczęto trasę 2 (×${f2})!`, 'text-slate-800');
+                renderBoard();
+                return;
+            }
+
+            const head1 = playerPath1.length > 0 ? playerPath1[playerPath1.length - 1] : null;
+            const head2 = isDual && playerPath2.length > 0 ? playerPath2[playerPath2.length - 1] : null;
+
+            const alreadyIn1 = playerPath1.some(p => p.r === r && p.c === c);
+            const alreadyIn2 = isDual && playerPath2.some(p => p.r === r && p.c === c);
+
+            const canExtend1 = !isDone1 && head1 && isOrthogonal(head1, { r, c }) && !alreadyIn1;
+            const canExtend2 = isDual && !isDone2 && head2 && isOrthogonal(head2, { r, c }) && !alreadyIn2;
+
+            if (canExtend1 && canExtend2) {
+                if (isMult1 && !isMult2) {
+                    applyMove(1, r, c, value);
+                    return;
+                } else if (isMult2 && !isMult1) {
+                    applyMove(2, r, c, value);
+                    return;
+                } else if (isMult1 && isMult2) {
+                    const lastTrack = moveHistory[moveHistory.length - 1] || 1;
+                    applyMove(lastTrack, r, c, value);
+                    return;
+                }
+            }
+
+            if (canExtend1) {
+                if (isMult1) {
+                    applyMove(1, r, c, value);
+                } else {
+                    triggerError(cellElement, `Liczba ${value} nie jest wielokrotnością ${f1}!`, 1);
+                }
+                return;
+            }
+
+            if (canExtend2) {
+                if (isMult2) {
+                    applyMove(2, r, c, value);
+                } else {
+                    triggerError(cellElement, `Liczba ${value} nie jest wielokrotnością ${f2}!`, 2);
+                }
+                return;
+            }
+
+            // Cofanie przez kliknięcie ostatniego pola
+            if (head1 && head1.r === r && head1.c === c && playerPath1.length > 1) {
+                playerPath1.pop();
+                playSound('click');
+                setStatusMessage('Cofnięto krok na trasie 1.', 'text-slate-700');
+                renderBoard();
+                return;
+            }
+            if (head2 && head2.r === r && head2.c === c && playerPath2.length > 1) {
+                playerPath2.pop();
+                playSound('click');
+                setStatusMessage('Cofnięto krok na trasie 2.', 'text-slate-700');
+                renderBoard();
+                return;
+            }
+
+            if (playerPath1.length === 0 && (!isDual || playerPath2.length === 0)) {
+                triggerError(cellElement, 'Zacznij od pola startowego przy strzałce!');
+                return;
+            }
+
+            const isDiagonalTo1 = head1 && Math.abs(r - head1.r) === 1 && Math.abs(c - head1.c) === 1;
+            const isDiagonalTo2 = head2 && Math.abs(r - head2.r) === 1 && Math.abs(c - head2.c) === 1;
+
+            if (isDiagonalTo1 || isDiagonalTo2) {
+                triggerError(cellElement, 'Nie wolno chodzić na skos! Tylko przez boczną krawędź.');
+            } else {
+                triggerError(cellElement, 'Wybierz pole sąsiadujące bezpośrednio z końcem trasy!');
+            }
+        }
+
+        // Sterowanie klawiaturą (WASDX dla Gracza 1 / Trasy 1, Strzałki dla Gracza 2 lub aktywnej trasy)
+        function moveTrackByDirection(trackNum, dr, dc) {
+            if (!isGameActive) return;
+            const isDual = selectedFactors.length === 2;
+            if (trackNum === 2 && !isDual) trackNum = 1;
+
+            const path = trackNum === 1 ? playerPath1 : playerPath2;
+            const startR = 0;
+            const startC = trackNum === 1 ? 0 : gridSize - 1;
+            const endR = gridSize - 1;
+            const endC = trackNum === 1 ? gridSize - 1 : 0;
+
+            // Jeśli trasa jeszcze nie rozpoczęta -> wejdź na pole startowe
+            if (path.length === 0) {
+                const startCell = document.querySelector(`.maze-cell[data-r="${startR}"][data-c="${startC}"]`);
+                if (startCell) handleCellClick(startR, startC, startCell);
+                return;
+            }
+
+            const head = path[path.length - 1];
+            // Jeśli trasa już na mecie
+            if (head.r === endR && head.c === endC) return;
+
+            const nr = head.r + dr;
+            const nc = head.c + dc;
+            if (nr < 0 || nr >= gridSize || nc < 0 || nc >= gridSize) return;
+
+            // Jeśli gracz cofa się na poprzednie pole swojej ścieżki
+            if (path.length >= 2 && path[path.length - 2].r === nr && path[path.length - 2].c === nc) {
+                path.pop();
+                playSound('click');
+                setStatusMessage(`Cofnięto krok (Trasa ${trackNum}).`, 'text-slate-700');
+                renderBoard();
+                return;
+            }
+
+            // Jeśli pole już odwiedzone na tej samej trasie
+            if (path.some(p => p.r === nr && p.c === nc)) return;
+
+            const targetCell = document.querySelector(`.maze-cell[data-r="${nr}"][data-c="${nc}"]`);
+            if (!targetCell) return;
+
+            const val = gridData[nr][nc];
+            const factor = selectedFactors[trackNum - 1];
+            if (val % factor === 0) {
+                applyMove(trackNum, nr, nc, val);
+            } else {
+                const prefix = isTwoPlayerMode ? `Gracz ${trackNum}: ` : '';
+                triggerError(targetCell, `${prefix}Liczba ${val} nie jest wielokrotnością ${factor}!`, trackNum);
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (!isGameActive) return;
+            const key = e.key.toLowerCase();
+
+            // Klawisze WASDX -> Gracz 1 (Trasa 1)
+            if (['w', 'a', 's', 'd', 'x'].includes(key)) {
+                e.preventDefault();
+                if (key === 'w') moveTrackByDirection(1, -1, 0);
+                if (key === 's' || key === 'x') moveTrackByDirection(1, 1, 0);
+                if (key === 'a') moveTrackByDirection(1, 0, -1);
+                if (key === 'd') moveTrackByDirection(1, 0, 1);
+                return;
+            }
+
+            // Klawisze Strzałek -> W trybie 2P sterują Graczem 2 (Trasa 2); w trybie 1P sterują ostatnio używaną/aktywną trasą
+            if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
+                e.preventDefault();
+                let targetTrack = 1;
+                if (isTwoPlayerMode) {
+                    targetTrack = 2;
+                } else if (selectedFactors.length === 2) {
+                    const isDone1 = playerPath1.length > 0 && playerPath1[playerPath1.length - 1].r === gridSize - 1 && playerPath1[playerPath1.length - 1].c === gridSize - 1;
+                    if (isDone1) {
+                        targetTrack = 2;
+                    } else if (moveHistory.length > 0) {
+                        targetTrack = moveHistory[moveHistory.length - 1];
+                    }
+                }
+
+                if (key === 'arrowup') moveTrackByDirection(targetTrack, -1, 0);
+                if (key === 'arrowdown') moveTrackByDirection(targetTrack, 1, 0);
+                if (key === 'arrowleft') moveTrackByDirection(targetTrack, 0, -1);
+                if (key === 'arrowright') moveTrackByDirection(targetTrack, 0, 1);
+            }
+        });
+
+        function applyMove(trackNum, r, c, value) {
+            const factor = selectedFactors[trackNum - 1];
+            const isDual = selectedFactors.length === 2;
+
+            if (trackNum === 1) {
+                playerPath1.push({ r, c });
+            } else {
+                playerPath2.push({ r, c });
+            }
+            moveHistory.push(trackNum);
+
+            const inBoth = isDual &&
+                playerPath1.some(p => p.r === r && p.c === c) &&
+                playerPath2.some(p => p.r === r && p.c === c);
+
+            renderBoard();
+
+            const isDone1 = playerPath1.length > 0 &&
+                playerPath1[playerPath1.length - 1].r === gridSize - 1 &&
+                playerPath1[playerPath1.length - 1].c === gridSize - 1;
+            const isDone2 = !isDual || (playerPath2.length > 0 &&
+                playerPath2[playerPath2.length - 1].r === gridSize - 1 &&
+                playerPath2[playerPath2.length - 1].c === 0);
+
+            if (isDone1 && isDone2) {
+                handleVictory();
+                return;
+            }
+
+            if (inBoth) {
+                playSound('intersect');
+                setStatusMessage(`✨ Skrzyżowanie! ${value} to wspólna wielokrotność ${selectedFactors[0]} i ${selectedFactors[1]}!`, 'text-indigo-700');
+            } else {
+                playSound('step');
+                const quotient = value / factor;
+                const prefix = isTwoPlayerMode ? `Gracz ${trackNum}: ` : '';
+                setStatusMessage(`${prefix}Dobrze! ${quotient} × ${factor} = ${value}`, 'text-slate-800');
+            }
+        }
+
+        function triggerError(element, msg, trackNum = null) {
+            mistakes++;
+            if (trackNum === 1) mistakesP1++;
+            if (trackNum === 2) mistakesP2++;
+            document.getElementById('mistakes-count').textContent = mistakes;
+            playSound('error');
+            setStatusMessage(msg, 'text-rose-600');
+
+            element.classList.remove('error');
+            void element.offsetWidth;
+            element.classList.add('error');
+            setTimeout(() => {
+                element.classList.remove('error');
+            }, 500);
+        }
+
+        function setStatusMessage(text, colorClass) {
+            const el = document.getElementById('status-message');
+            el.textContent = text;
+            el.className = `min-h-[2rem] my-1 px-2 text-center font-bold text-sm sm:text-lg transition-opacity ${colorClass}`;
+        }
+
+        // --- TIMER ---
+        function startTimer() {
+            clearInterval(timerInterval);
+            secondsElapsed = 0;
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                secondsElapsed++;
+                updateTimerDisplay();
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(secondsElapsed / 60).toString().padStart(2, '0');
+            const secs = (secondsElapsed % 60).toString().padStart(2, '0');
+            document.getElementById('timer-display').textContent = `${mins}:${secs}`;
+        }
+
+        // --- ROZPOCZĘCIE I ZAKOŃCZENIE GRY ---
+        function startNewGame() {
+            document.getElementById('setup-modal').classList.add('hidden');
+            document.getElementById('victory-modal').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+
+            const isDual = selectedFactors.length === 2;
+            const c1 = trackColors[0];
+            const c2 = trackColors[1];
+
+            // Kolorowanie strzałek SVG
+            document.getElementById('svg-start-1').style.color = c1.main;
+            document.getElementById('svg-end-1').style.color = c1.main;
+            document.getElementById('svg-start-2').style.color = c2.main;
+            document.getElementById('svg-end-2').style.color = c2.main;
+
+            // Ustaw odznaki w wybranych kolorach w polu "Szukaj wielokrotności"
+            const badgesContainer = document.getElementById('active-factors-badges');
+            if (!isDual) {
+                badgesContainer.innerHTML = `
+                    <span class="inline-flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full text-white text-xl sm:text-2xl font-bold border-2 border-slate-800 shadow-sm" style="background:${c1.main}">
+                        ${selectedFactors[0]}
+                    </span>
+                `;
+            } else {
+                badgesContainer.innerHTML = `
+                    <span class="inline-flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full text-white text-xl sm:text-2xl font-bold border-2 border-slate-800 shadow-sm" style="background:${c1.main}" title="Trasa 1">
+                        ${selectedFactors[0]}
+                    </span>
+                    <span class="font-bold text-slate-400">oraz</span>
+                    <span class="inline-flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full text-white text-xl sm:text-2xl font-bold border-2 border-slate-800 shadow-sm" style="background:${c2.main}" title="Trasa 2">
+                        ${selectedFactors[1]}
+                    </span>
+                `;
+            }
+
+            // Pasek HUD dla 2 graczy
+            const twoPlayerBar = document.getElementById('two-player-bar');
+            if (isTwoPlayerMode && isDual) {
+                twoPlayerBar.classList.remove('hidden');
+                document.getElementById('p1-dot').style.backgroundColor = c1.main;
+                document.getElementById('p2-dot').style.backgroundColor = c2.main;
+                document.getElementById('p1-factor-label').textContent = `×${selectedFactors[0]}`;
+                document.getElementById('p2-factor-label').textContent = `×${selectedFactors[1]}`;
+            } else {
+                twoPlayerBar.classList.add('hidden');
+            }
+
+            // Pokaż lub ukryj drugą parę strzałek
+            const arrowStart2 = document.getElementById('arrow-start-2');
+            const arrowEnd2 = document.getElementById('arrow-end-2');
+            if (isDual) {
+                arrowStart2.classList.remove('hidden');
+                arrowEnd2.classList.remove('hidden');
+            } else {
+                arrowStart2.classList.add('hidden');
+                arrowEnd2.classList.add('hidden');
+            }
+
+            mistakes = 0;
+            mistakesP1 = 0;
+            mistakesP2 = 0;
+            document.getElementById('mistakes-count').textContent = '0';
+            playerPath1 = [];
+            playerPath2 = [];
+            moveHistory = [];
+            isBoardRevealed = false;
+            document.getElementById('btn-reveal').textContent = '👁️ Pokaż planszę';
+            isGameActive = true;
+            hasGameStartedBefore = true;
+
+            generateMaze();
+            renderBoard();
+            startTimer();
+
+            if (isTwoPlayerMode) {
+                setStatusMessage('Gracz 1 (WASDX) i Gracz 2 (Strzałki) – ruszajcie ze startu!', 'text-slate-800');
+            } else if (isDual) {
+                setStatusMessage(`Kliknij pole przy strzałce 1 (${gridData[0][0]}) lub strzałce 2 (${gridData[0][gridSize - 1]})!`, 'text-slate-800');
+            } else {
+                setStatusMessage(`Kliknij pole ${gridData[0][0]} przy strzałce, aby zacząć!`, 'text-slate-800');
+            }
+        }
+
+        function handleVictory() {
+            isGameActive = false;
+            clearInterval(timerInterval);
+            playSound('win');
+
+            const isDual = selectedFactors.length === 2;
+            const c1 = trackColors[0];
+            const c2 = trackColors[1];
+            const desc = document.getElementById('win-description');
+
+            if (isTwoPlayerMode && isDual) {
+                document.getElementById('win-title').textContent = 'Obie trasy ukończone!';
+                desc.innerHTML = `Gracz 1 (<strong style="color:${c1.main}">×${selectedFactors[0]}</strong>, błędy: ${mistakesP1}) i Gracz 2 (<strong style="color:${c2.main}">×${selectedFactors[1]}</strong>, błędy: ${mistakesP2}) dotarli do mety!`;
+            } else if (isDual) {
+                document.getElementById('win-title').textContent = 'Zadanie ukończone!';
+                desc.innerHTML = `Udało Ci się połączyć obie trasy dla liczb <strong style="color:${c1.main}">${selectedFactors[0]}</strong> oraz <strong style="color:${c2.main}">${selectedFactors[1]}</strong>!`;
+            } else {
+                document.getElementById('win-title').textContent = 'Zadanie ukończone!';
+                desc.innerHTML = `Udało Ci się przejść cały labirynt wielokrotności liczby <strong style="color:${c1.main}" class="text-xl">${selectedFactors[0]}</strong>!`;
+            }
+
+            document.getElementById('win-time').textContent = document.getElementById('timer-display').textContent;
+            document.getElementById('win-mistakes').textContent = mistakes;
+
+            setTimeout(() => {
+                document.getElementById('victory-modal').classList.remove('hidden');
+            }, 350);
+        }
+
+        // --- PODPOWIEDŹ ---
+        function hintForTrack(playerPath, solutionPath, startR, startC, trackName) {
+            if (playerPath.length === 0) {
+                highlightCell(startR, startC);
+                setStatusMessage(`Podpowiedź: Zacznij trasę (${trackName}) przy strzałce!`, 'text-amber-700');
+                return true;
+            }
+
+            const current = playerPath[playerPath.length - 1];
+            const idxInSol = solutionPath.findIndex(p => p.r === current.r && p.c === current.c);
+
+            if (idxInSol !== -1 && idxInSol + 1 < solutionPath.length) {
+                const nextStep = solutionPath[idxInSol + 1];
+                highlightCell(nextStep.r, nextStep.c);
+                setStatusMessage(`Podpowiedź (${trackName}): Podświetlono kolejny krok na żółto.`, 'text-amber-700');
+                return true;
+            } else if (idxInSol === -1) {
+                // Cofnij ze ślepej uliczki
+                let lastValidIdx = -1;
+                for (let i = playerPath.length - 1; i >= 0; i--) {
+                    if (solutionPath.some(sp => sp.r === playerPath[i].r && sp.c === playerPath[i].c)) {
+                        lastValidIdx = i;
+                        break;
+                    }
+                }
+                if (lastValidIdx !== -1) {
+                    playerPath.splice(lastValidIdx + 1);
+                    renderBoard();
+                    const validPos = playerPath[playerPath.length - 1];
+                    const solIdx = solutionPath.findIndex(p => p.r === validPos.r && p.c === validPos.c);
+                    if (solIdx + 1 < solutionPath.length) {
+                        highlightCell(solutionPath[solIdx + 1].r, solutionPath[solIdx + 1].c);
+                    }
+                    setStatusMessage(`Cofnięto ze ślepej uliczki (${trackName}) i wskazano drogę!`, 'text-amber-700');
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function showHint() {
+            if (!isGameActive) return;
+            playSound('click');
+
+            const isDone1 = playerPath1.length > 0 &&
+                playerPath1[playerPath1.length - 1].r === gridSize - 1 &&
+                playerPath1[playerPath1.length - 1].c === gridSize - 1;
+
+            if (!isDone1) {
+                hintForTrack(playerPath1, solutionPath1, 0, 0, `Trasa 1 ×${selectedFactors[0]}`);
+            } else if (selectedFactors.length === 2) {
+                hintForTrack(playerPath2, solutionPath2, 0, gridSize - 1, `Trasa 2 ×${selectedFactors[1]}`);
+            }
+        }
+
+        function highlightCell(r, c) {
+            const cell = document.querySelector(`.maze-cell[data-r="${r}"][data-c="${c}"]`);
+            if (cell) {
+                cell.classList.add('hint');
+                setTimeout(() => cell.classList.remove('hint'), 1500);
+            }
+        }
+
+        // --- OBSŁUGA PRZYCISKÓW ---
+        document.getElementById('btn-sound-setup').addEventListener('click', toggleSound);
+        document.getElementById('btn-sound-game').addEventListener('click', toggleSound);
+
+        document.getElementById('btn-start-game').addEventListener('click', () => {
+            playSound('click');
+            startNewGame();
+        });
+
+        document.getElementById('btn-cancel-setup').addEventListener('click', () => {
+            playSound('click');
+            document.getElementById('setup-modal').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+        });
+
+        document.getElementById('btn-change-factor').addEventListener('click', () => {
+            playSound('click');
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('setup-modal').classList.remove('hidden');
+            if (hasGameStartedBefore) {
+                document.getElementById('btn-cancel-setup').classList.remove('hidden');
+            }
+        });
+
+        document.getElementById('btn-undo').addEventListener('click', () => {
+            if (!isGameActive || moveHistory.length === 0) return;
+            playSound('click');
+            const lastTrack = moveHistory.pop();
+            if (lastTrack === 1 && playerPath1.length > 0) {
+                playerPath1.pop();
+            } else if (lastTrack === 2 && playerPath2.length > 0) {
+                playerPath2.pop();
+            }
+            renderBoard();
+            setStatusMessage('Cofnięto ostatni ruch.', 'text-slate-700');
+        });
+
+        document.getElementById('btn-hint').addEventListener('click', showHint);
+
+        document.getElementById('btn-reveal').addEventListener('click', () => {
+            playSound('click');
+            isBoardRevealed = !isBoardRevealed;
+            const btn = document.getElementById('btn-reveal');
+            btn.textContent = isBoardRevealed ? '🙈 Ukryj planszę' : '👁️ Pokaż planszę';
+            renderBoard();
+            if (isBoardRevealed) {
+                setStatusMessage('Podgląd prawidłowych tras włączony.', 'text-violet-700');
+            } else {
+                setStatusMessage('Podgląd planszy ukryty.', 'text-slate-700');
+            }
+        });
+
+        document.getElementById('btn-new-maze').addEventListener('click', () => {
+            playSound('click');
+            startNewGame();
+        });
+
+        document.getElementById('btn-win-next').addEventListener('click', () => {
+            playSound('click');
+            startNewGame();
+        });
+
+        document.getElementById('btn-win-change').addEventListener('click', () => {
+            playSound('click');
+            document.getElementById('victory-modal').classList.add('hidden');
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('setup-modal').classList.remove('hidden');
+            document.getElementById('btn-cancel-setup').classList.add('hidden');
+        });
+
+        // Zamykanie okienka z wynikiem, aby zobaczyć zaznaczone trasy na planszy
+        function closeVictoryModalToInspect() {
+            playSound('click');
+            document.getElementById('victory-modal').classList.add('hidden');
+            setStatusMessage('Podgląd ukończonej trasy. Kliknij „Nowa plansza” lub „Ustawienia”, aby grać dalej.', 'text-indigo-700');
+        }
+
+        document.getElementById('btn-win-close-x').addEventListener('click', closeVictoryModalToInspect);
+        document.getElementById('btn-win-inspect').addEventListener('click', closeVictoryModalToInspect);
+
+    </script>
+</body>
+</html>
