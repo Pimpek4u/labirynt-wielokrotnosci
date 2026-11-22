@@ -124,12 +124,98 @@
                 from { transform: translateY(0); }
                 to { transform: translateY(5px); }
             }
+
+            /* Arkusze i wydruk A4 */
+            .a4-sheet {
+                background: #ffffff;
+                width: 100%;
+                max-width: 680px;
+                aspect-ratio: 210 / 297;
+                padding: 20px 24px;
+                border-radius: 12px;
+                border: 1px solid #cbd5e1;
+                box-shadow: 0 12px 32px rgba(15, 23, 42, 0.14);
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                box-sizing: border-box;
+                overflow: hidden;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .a4-maze-grid {
+                display: grid;
+                border: 2.5px solid #1e293b;
+                background-color: #ffffff;
+                border-radius: 6px;
+                overflow: hidden;
+            }
+
+            .a4-maze-cell {
+                aspect-ratio: 1 / 1;
+                border: 1px solid #94a3b8;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                color: #0f172a;
+                line-height: 1;
+            }
+
+            @page {
+                size: A4 portrait;
+                margin: 10mm;
+            }
+
+            @media print {
+                html, body {
+                    background: #ffffff !important;
+                    padding: 0 !important;
+                    margin: 0 !important;
+                    min-height: auto !important;
+                    display: block !important;
+                }
+                .no-print {
+                    display: none !important;
+                }
+                #print-root {
+                    display: block !important;
+                    width: 100% !important;
+                }
+                .a4-sheet {
+                    width: 190mm !important;
+                    height: 276mm !important;
+                    max-width: none !important;
+                    max-height: 276mm !important;
+                    aspect-ratio: auto !important;
+                    padding: 2mm 3mm !important;
+                    margin: 0 !important;
+                    border: none !important;
+                    border-radius: 0 !important;
+                    box-shadow: none !important;
+                    page-break-after: always;
+                    break-after: page;
+                }
+                .a4-sheet:last-child {
+                    page-break-after: auto;
+                    break-after: auto;
+                }
+                .a4-board-single {
+                    width: 136mm !important;
+                    max-width: 136mm !important;
+                }
+                .a4-board-double {
+                    width: 84mm !important;
+                    max-width: 84mm !important;
+                }
+            }
         </style>
     </head>
     <body class="min-h-screen flex flex-col items-center justify-center p-2 sm:p-4 text-slate-900">
 
         <!-- Ekran Ustawień / Wyboru Liczb (Nowoczesny styl) -->
-        <div id="setup-modal" class="w-full max-w-2xl bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-[2rem] p-5 sm:p-8 shadow-[0_20px_50px_rgba(30,41,59,0.12)] text-center relative overflow-hidden">
+        <div id="setup-modal" class="no-print w-full max-w-2xl bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-[2rem] p-5 sm:p-8 shadow-[0_20px_50px_rgba(30,41,59,0.12)] text-center relative overflow-hidden">
             <div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-blue-500 via-indigo-500 to-fuchsia-500"></div>
 
             <div class="flex justify-between items-center mb-4 mt-1">
@@ -161,13 +247,22 @@
                 <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-3">
                     <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Wielkość planszy</div>
                     <div class="grid grid-cols-3 gap-1.5" id="grid-size-selector">
-                        <button data-size="8" class="size-btn py-2 px-2 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all">
+                        <button data-size="4" class="size-btn py-1.5 px-2 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all">
+                            4×4
+                        </button>
+                        <button data-size="5" class="size-btn py-1.5 px-2 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all">
+                            5×5
+                        </button>
+                        <button data-size="6" class="size-btn py-1.5 px-2 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all">
+                            6×6
+                        </button>
+                        <button data-size="8" class="size-btn py-1.5 px-2 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all">
                             8×8
                         </button>
-                        <button data-size="10" class="size-btn py-2 px-2 rounded-xl font-bold text-xs sm:text-sm bg-indigo-600 text-white shadow-sm transition-all">
+                        <button data-size="10" class="size-btn py-1.5 px-2 rounded-xl font-bold text-xs sm:text-sm bg-indigo-600 text-white shadow-sm transition-all">
                             10×10
                         </button>
-                        <button data-size="12" class="size-btn py-2 px-2 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all">
+                        <button data-size="12" class="size-btn py-1.5 px-2 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all">
                             12×12
                         </button>
                     </div>
@@ -193,18 +288,21 @@
                 </div>
             </div>
 
-            <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                <button id="btn-cancel-setup" class="hidden action-btn px-6 py-3 rounded-2xl font-bold text-base bg-slate-100 text-slate-700 hover:bg-slate-200 w-full sm:w-40">
+            <div class="flex flex-col sm:flex-row gap-2.5 justify-center items-center flex-wrap">
+                <button id="btn-cancel-setup" class="hidden action-btn px-5 py-3 rounded-2xl font-bold text-sm sm:text-base bg-slate-100 text-slate-700 hover:bg-slate-200 w-full sm:w-auto whitespace-nowrap">
                     Wróć do gry
                 </button>
-                <button id="btn-start-game" class="action-btn px-8 py-3 rounded-2xl font-bold text-base sm:text-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 w-full sm:w-56">
+                <button id="btn-open-a4-setup" type="button" class="action-btn px-5 py-3 rounded-2xl font-bold text-sm sm:text-base bg-amber-100 text-amber-950 border border-amber-300 hover:bg-amber-200 w-full sm:w-auto whitespace-nowrap">
+                    🖨️ Generuj karty pracy A4
+                </button>
+                <button id="btn-start-game" class="action-btn px-8 py-3 rounded-2xl font-bold text-base sm:text-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 w-full sm:w-56 whitespace-nowrap">
                     Rozpocznij grę →
                 </button>
             </div>
         </div>
 
         <!-- Główny Ekran Gry -->
-        <div id="game-screen" class="hidden w-full max-w-3xl flex flex-col items-center">
+        <div id="game-screen" class="no-print hidden w-full max-w-3xl flex flex-col items-center">
             
             <!-- Górny pasek informacyjny -->
             <div class="w-full flex flex-wrap items-center justify-between gap-2 bg-white border-4 border-slate-800 rounded-2xl px-4 py-3 mb-3 shadow-md">
@@ -314,11 +412,14 @@
                 <button id="btn-new-maze" class="action-btn px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-emerald-300 text-slate-900 hover:bg-emerald-400">
                     🔄 Nowa plansza
                 </button>
+                <button id="btn-open-a4-game" type="button" class="action-btn px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-amber-100 text-amber-950 border border-amber-300 hover:bg-amber-200 whitespace-nowrap">
+                    🖨️ Generuj karty pracy A4
+                </button>
             </div>
         </div>
 
         <!-- Ekran Wygranej (Nowoczesny Modal z opcją zamknięcia) -->
-        <div id="victory-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-md flex items-center justify-center p-4 z-50">
+        <div id="victory-modal" class="no-print hidden fixed inset-0 bg-slate-900/50 backdrop-blur-md flex items-center justify-center p-4 z-50">
             <div class="bg-white border border-slate-200 rounded-[2rem] p-6 sm:p-8 max-w-md w-full text-center shadow-[0_25px_60px_rgba(15,23,42,0.25)] relative overflow-hidden">
                 <div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-emerald-400 via-teal-500 to-blue-500"></div>
                 
@@ -359,6 +460,108 @@
                 </div>
             </div>
         </div>
+
+        <!-- Modal Generatora Kart Pracy A4 -->
+        <div id="a4-modal" class="no-print hidden fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 z-50">
+            <div class="bg-white border border-slate-200 rounded-[1.75rem] w-full max-w-6xl max-h-[94vh] flex flex-col shadow-[0_25px_70px_rgba(15,23,42,0.3)] overflow-hidden relative">
+                <div class="h-1.5 bg-gradient-to-r from-amber-400 via-indigo-500 to-blue-600 shrink-0"></div>
+
+                <!-- Nagłówek modala -->
+                <div class="flex items-center justify-between px-4 sm:px-6 py-3.5 border-b border-slate-200 bg-white shrink-0">
+                    <div>
+                        <h2 class="text-lg sm:text-2xl font-bold text-slate-800">Generator kart pracy A4</h2>
+                        <p class="text-xs sm:text-sm text-slate-500">Skonfiguruj kartę, sprawdź podgląd i wydrukuj lub zapisz jako PDF</p>
+                    </div>
+                    <button id="btn-a4-close-x" type="button" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold flex items-center justify-center transition-colors shrink-0" title="Zamknij generator">
+                        ✕
+                    </button>
+                </div>
+
+                <!-- Zawartość: Konfiguracja (lewa) + Podgląd A4 (prawa) -->
+                <div class="flex-1 overflow-y-auto grid grid-cols-1 lg:grid-cols-[370px_1fr]">
+                    <!-- Panel Pytań Konfiguracyjnych -->
+                    <div class="p-4 sm:p-5 bg-slate-50 border-b lg:border-b-0 lg:border-r border-slate-200 flex flex-col gap-4">
+                        <!-- 1. Dla ilu graczy -->
+                        <div class="bg-white border border-slate-200 rounded-2xl p-3">
+                            <div class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">1. Dla ilu graczy?</div>
+                            <div class="grid grid-cols-2 gap-1.5">
+                                <button id="a4-players-1" type="button" class="py-2 px-2.5 rounded-xl font-bold text-xs sm:text-sm bg-indigo-600 text-white shadow-sm transition-all">
+                                    👤 1 Gracz
+                                </button>
+                                <button id="a4-players-2" type="button" class="py-2 px-2.5 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all">
+                                    👥 2 Graczy
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 2. Ile kratek -->
+                        <div class="bg-white border border-slate-200 rounded-2xl p-3">
+                            <div class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">2. Ile kratek (rozmiar siatki)?</div>
+                            <div id="a4-size-selector" class="grid grid-cols-3 gap-1.5">
+                                <button data-a4-size="4" type="button" class="a4-size-btn py-1.5 px-2 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all">4×4</button>
+                                <button data-a4-size="5" type="button" class="a4-size-btn py-1.5 px-2 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all">5×5</button>
+                                <button data-a4-size="6" type="button" class="a4-size-btn py-1.5 px-2 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all">6×6</button>
+                                <button data-a4-size="8" type="button" class="a4-size-btn py-1.5 px-2 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all">8×8</button>
+                                <button data-a4-size="10" type="button" class="a4-size-btn py-1.5 px-2 rounded-xl font-bold text-xs sm:text-sm bg-indigo-600 text-white shadow-sm transition-all">10×10</button>
+                                <button data-a4-size="12" type="button" class="a4-size-btn py-1.5 px-2 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all">12×12</button>
+                            </div>
+                        </div>
+
+                        <!-- 3. Jakie liczby -->
+                        <div class="bg-white border border-slate-200 rounded-2xl p-3">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-bold uppercase tracking-wider text-slate-500">3. Jakie liczby?</span>
+                                <span id="a4-factors-hint" class="text-[11px] font-semibold text-slate-400">1 lub 2 mnożniki</span>
+                            </div>
+                            <div id="a4-factor-buttons" class="grid grid-cols-6 gap-1.5">
+                                <!-- Generowane przez JS -->
+                            </div>
+                        </div>
+
+                        <!-- 4. Czy 1 czy dwie plansze na stronę A4 -->
+                        <div class="bg-white border border-slate-200 rounded-2xl p-3">
+                            <div class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">4. Plansze na stronie A4?</div>
+                            <div class="grid grid-cols-2 gap-1.5">
+                                <button id="a4-boards-1" type="button" class="py-2 px-2 rounded-xl font-bold text-xs sm:text-sm bg-indigo-600 text-white shadow-sm transition-all">
+                                    📄 1 plansza
+                                </button>
+                                <button id="a4-boards-2" type="button" class="py-2 px-2 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all">
+                                    📑 2 plansze
+                                </button>
+                            </div>
+                            <p id="a4-boards-note" class="text-[11px] text-slate-500 mt-1.5">Duża plansza z miejscem na imię i datę.</p>
+                        </div>
+
+                        <!-- Klucz odpowiedzi na 2. stronie -->
+                        <label class="bg-white border border-slate-200 rounded-2xl p-3 flex items-center gap-3 cursor-pointer hover:bg-slate-50 transition-colors">
+                            <input id="a4-include-key" type="checkbox" class="w-5 h-5 rounded accent-indigo-600 cursor-pointer shrink-0">
+                            <div class="text-left">
+                                <div class="text-sm font-bold text-slate-800">Dołącz klucz odpowiedzi</div>
+                                <div class="text-xs text-slate-500">Generuje 2. stronę A4 z zaznaczonymi trasami</div>
+                            </div>
+                        </label>
+
+                        <!-- Akcje -->
+                        <div class="flex flex-col gap-2 pt-1">
+                            <button id="btn-a4-regenerate" type="button" class="action-btn w-full py-2.5 px-4 rounded-xl font-bold text-sm bg-white text-slate-800 hover:bg-slate-100">
+                                🔄 Losuj nowe labirynty
+                            </button>
+                            <button id="btn-a4-print" type="button" class="action-btn w-full py-3 px-4 rounded-xl font-bold text-sm sm:text-base bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700">
+                                🖨️ Drukuj / Zapisz jako PDF
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Podgląd kartek A4 na żywo -->
+                    <div class="p-4 sm:p-6 bg-slate-200/70 overflow-y-auto flex flex-col items-center gap-6" id="a4-preview-container">
+                        <!-- Generowane przez JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Warstwa druku A4 (ukryta na ekranie, aktywna wyłącznie w @media print) -->
+        <div id="print-root" class="hidden"></div>
 
         <script>
             // --- PALETA KOLORÓW DO WYBORU ---
@@ -473,18 +676,22 @@
             btnMode1P.addEventListener('click', () => { playSound('click'); setGameMode(false); });
             btnMode2P.addEventListener('click', () => { playSound('click'); setGameMode(true); });
 
-            // Wybór wielkości planszy (8x8, 10x10, 12x12)
+            function updateGridSizeButtonsUI() {
+                document.querySelectorAll('.size-btn').forEach(b => {
+                    if (parseInt(b.dataset.size) === gridSize) {
+                        b.className = 'size-btn py-1.5 px-2 rounded-xl font-bold text-xs sm:text-sm bg-indigo-600 text-white shadow-sm transition-all';
+                    } else {
+                        b.className = 'size-btn py-1.5 px-2 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all';
+                    }
+                });
+            }
+
+            // Wybór wielkości planszy (4x4, 5x5, 6x6, 8x8, 10x10, 12x12)
             document.querySelectorAll('.size-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     playSound('click');
                     gridSize = parseInt(btn.dataset.size);
-                    document.querySelectorAll('.size-btn').forEach(b => {
-                        if (parseInt(b.dataset.size) === gridSize) {
-                            b.className = 'size-btn py-2 px-2 rounded-xl font-bold text-xs sm:text-sm bg-indigo-600 text-white shadow-sm transition-all';
-                        } else {
-                            b.className = 'size-btn py-2 px-2 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all';
-                        }
-                    });
+                    updateGridSizeButtonsUI();
                 });
             });
 
@@ -586,10 +793,10 @@
                 return (a * b) / gcd(a, b);
             }
 
-            // --- GENERATOR LABIRYNTU (1 LUB 2 TRASY, DOWOLNY ROZMIAR) ---
-            function generatePath(startR, startC, endR, endC) {
+            // --- GENERATOR LABIRYNTU (BEZSTANOWY, 1 LUB 2 TRASY, ROZMIAR 4x4 - 12x12) ---
+            function generatePathForSize(size, startR, startC, endR, endC) {
                 let path = [];
-                let visited = Array.from({ length: gridSize }, () => Array(gridSize).fill(false));
+                let visited = Array.from({ length: size }, () => Array(size).fill(false));
 
                 function dfs(r, c) {
                     path.push({ r, c });
@@ -613,12 +820,12 @@
                         const nr = r + dr;
                         const nc = c + dc;
 
-                        if (nr >= 0 && nr < gridSize && nc >= 0 && nc < gridSize && !visited[nr][nc]) {
+                        if (nr >= 0 && nr < size && nc >= 0 && nc < size && !visited[nr][nc]) {
                             let adjacentVisitedCount = 0;
                             for (let cd of dirs) {
                                 const ar = nr + cd.dr;
                                 const ac = nc + cd.dc;
-                                if (ar >= 0 && ar < gridSize && ac >= 0 && ac < gridSize && visited[ar][ac]) {
+                                if (ar >= 0 && ar < size && ac >= 0 && ac < size && visited[ar][ac]) {
                                     adjacentVisitedCount++;
                                 }
                             }
@@ -637,33 +844,33 @@
                 return path;
             }
 
-            function generateMaze() {
-                const f1 = selectedFactors[0];
-                const isDual = selectedFactors.length === 2;
-                const f2 = isDual ? selectedFactors[1] : null;
+            function createMazeInstance(size, factors) {
+                const f1 = factors[0];
+                const isDual = factors.length === 2;
+                const f2 = isDual ? factors[1] : null;
 
-                solutionPath1 = generatePath(0, 0, gridSize - 1, gridSize - 1);
-                solutionPath2 = [];
+                const sol1 = generatePathForSize(size, 0, 0, size - 1, size - 1);
+                let sol2 = [];
 
                 if (isDual) {
                     let attempts = 0;
                     while (attempts < 60) {
-                        const candidate = generatePath(0, gridSize - 1, gridSize - 1, 0);
-                        const touchesCorners = candidate.some(p => (p.r === 0 && p.c === 0) || (p.r === gridSize - 1 && p.c === gridSize - 1));
+                        const candidate = generatePathForSize(size, 0, size - 1, size - 1, 0);
+                        const touchesCorners = candidate.some(p => (p.r === 0 && p.c === 0) || (p.r === size - 1 && p.c === size - 1));
                         if (!touchesCorners && candidate.length > 0) {
-                            solutionPath2 = candidate;
+                            sol2 = candidate;
                             break;
                         }
                         attempts++;
                     }
-                    if (solutionPath2.length === 0) {
-                        solutionPath2 = generatePath(0, gridSize - 1, gridSize - 1, 0);
+                    if (sol2.length === 0) {
+                        sol2 = generatePathForSize(size, 0, size - 1, size - 1, 0);
                     }
                 }
 
                 const mult1 = Array.from({ length: 12 }, (_, i) => f1 * (i + 1));
                 const mult2 = isDual ? Array.from({ length: 12 }, (_, i) => f2 * (i + 1)) : [];
-                
+
                 let commonMults = [];
                 if (isDual) {
                     const baseLcm = lcm(f1, f2);
@@ -681,33 +888,46 @@
                     }
                 }
 
-                gridData = Array.from({ length: gridSize }, () => Array(gridSize).fill(0));
+                const data = Array.from({ length: size }, () => Array(size).fill(0));
 
-                for (let r = 0; r < gridSize; r++) {
-                    for (let c = 0; c < gridSize; c++) {
-                        const inP1 = solutionPath1.some(p => p.r === r && p.c === c);
-                        const inP2 = isDual && solutionPath2.some(p => p.r === r && p.c === c);
+                for (let r = 0; r < size; r++) {
+                    for (let c = 0; c < size; c++) {
+                        const inP1 = sol1.some(p => p.r === r && p.c === c);
+                        const inP2 = isDual && sol2.some(p => p.r === r && p.c === c);
 
                         if (inP1 && inP2) {
-                            gridData[r][c] = commonMults[Math.floor(Math.random() * commonMults.length)];
+                            data[r][c] = commonMults[Math.floor(Math.random() * commonMults.length)];
                         } else if (inP1) {
                             const pure1 = isDual ? mult1.filter(x => x % f2 !== 0) : mult1;
                             const pool = pure1.length > 0 ? pure1 : mult1;
-                            gridData[r][c] = pool[Math.floor(Math.random() * pool.length)];
+                            data[r][c] = pool[Math.floor(Math.random() * pool.length)];
                         } else if (inP2) {
                             const pure2 = mult2.filter(x => x % f1 !== 0);
                             const pool = pure2.length > 0 ? pure2 : mult2;
-                            gridData[r][c] = pool[Math.floor(Math.random() * pool.length)];
+                            data[r][c] = pool[Math.floor(Math.random() * pool.length)];
                         } else {
                             if (Math.random() < 0.1) {
                                 const trapPool = isDual && Math.random() < 0.5 ? mult2 : mult1;
-                                gridData[r][c] = trapPool[Math.floor(Math.random() * trapPool.length)];
+                                data[r][c] = trapPool[Math.floor(Math.random() * trapPool.length)];
                             } else {
-                                gridData[r][c] = nonMultiples[Math.floor(Math.random() * nonMultiples.length)];
+                                data[r][c] = nonMultiples[Math.floor(Math.random() * nonMultiples.length)];
                             }
                         }
                     }
                 }
+
+                return {
+                    gridData: data,
+                    solutionPath1: sol1,
+                    solutionPath2: sol2
+                };
+            }
+
+            function generateMaze() {
+                const instance = createMazeInstance(gridSize, selectedFactors);
+                gridData = instance.gridData;
+                solutionPath1 = instance.solutionPath1;
+                solutionPath2 = instance.solutionPath2;
             }
 
             // --- RENDEROWANIE PLANSZY (DYNAMICZNE KOLORY I ROZMIAR) ---
@@ -716,14 +936,23 @@
                 board.innerHTML = '';
                 board.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
 
-                // Dopasowanie rozmiaru czcionki do rozmiaru siatki
-                if (gridSize === 8) {
+                // Dopasowanie rozmiaru czcionki i szerokości siatki (4x4 - 12x12)
+                if (gridSize <= 5) {
+                    board.className = 'maze-grid w-full max-w-[440px] text-2xl sm:text-4xl';
+                } else if (gridSize === 6) {
+                    board.className = 'maze-grid w-full max-w-[480px] text-xl sm:text-3xl';
+                } else if (gridSize === 8) {
                     board.className = 'maze-grid w-full max-w-[520px] text-xl sm:text-3xl';
                 } else if (gridSize === 12) {
                     board.className = 'maze-grid w-full max-w-[560px] text-sm sm:text-xl md:text-2xl';
                 } else {
                     board.className = 'maze-grid w-full max-w-[540px] text-lg sm:text-2xl md:text-3xl';
                 }
+
+                // Wyśrodkowanie strzałek względem skrajnych komórek dla każdego rozmiaru planszy
+                const edgeOffsetPct = (50 / gridSize).toFixed(2);
+                document.getElementById('arrow-start-1').style.top = `${edgeOffsetPct}%`;
+                document.getElementById('arrow-end-1').style.bottom = `${edgeOffsetPct}%`;
 
                 const c1 = trackColors[0];
                 const c2 = trackColors[1];
@@ -1069,6 +1298,19 @@
                 }, 1000);
             }
 
+            function pauseTimer() {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+
+            function resumeTimer() {
+                clearInterval(timerInterval);
+                timerInterval = setInterval(() => {
+                    secondsElapsed++;
+                    updateTimerDisplay();
+                }, 1000);
+            }
+
             function updateTimerDisplay() {
                 const mins = Math.floor(secondsElapsed / 60).toString().padStart(2, '0');
                 const secs = (secondsElapsed % 60).toString().padStart(2, '0');
@@ -1330,6 +1572,396 @@
 
             document.getElementById('btn-win-close-x').addEventListener('click', closeVictoryModalToInspect);
             document.getElementById('btn-win-inspect').addEventListener('click', closeVictoryModalToInspect);
+
+            // --- GENERATOR KART PRACY A4 ---
+            let worksheetConfig = {
+                players: 1,
+                gridSize: 10,
+                factors: [7],
+                boardsPerPage: 1,
+                includeAnswerKey: true
+            };
+            let generatedWorksheets = [];
+            let wasGameActiveBeforeA4 = false;
+
+            const a4FactorButtonsContainer = document.getElementById('a4-factor-buttons');
+            for (let i = 2; i <= 12; i++) {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.textContent = i;
+                btn.dataset.a4Factor = i;
+                btn.className = 'a4-factor-btn factor-btn aspect-square rounded-xl text-sm sm:text-base font-bold flex items-center justify-center';
+                btn.addEventListener('click', () => {
+                    playSound('click');
+                    handleA4FactorSelect(i);
+                });
+                a4FactorButtonsContainer.appendChild(btn);
+            }
+
+            function handleA4FactorSelect(num) {
+                const idx = worksheetConfig.factors.indexOf(num);
+                if (idx !== -1) {
+                    const minAllowed = worksheetConfig.players === 2 ? 2 : 1;
+                    if (worksheetConfig.factors.length > minAllowed) {
+                        worksheetConfig.factors.splice(idx, 1);
+                    }
+                } else {
+                    if (worksheetConfig.factors.length < 2) {
+                        worksheetConfig.factors.push(num);
+                    } else {
+                        worksheetConfig.factors[1] = num;
+                    }
+                }
+                regenerateWorksheets();
+                updateA4UI();
+            }
+
+            function setA4Players(count) {
+                worksheetConfig.players = count;
+                if (count === 2 && worksheetConfig.factors.length < 2) {
+                    const second = worksheetConfig.factors[0] === 4 ? 6 : 4;
+                    worksheetConfig.factors.push(second);
+                }
+                regenerateWorksheets();
+                updateA4UI();
+            }
+
+            function setA4GridSize(size) {
+                worksheetConfig.gridSize = size;
+                regenerateWorksheets();
+                updateA4UI();
+            }
+
+            function setA4BoardsPerPage(count) {
+                worksheetConfig.boardsPerPage = count;
+                if (count === 2 && generatedWorksheets.length < 2) {
+                    generatedWorksheets.push(createMazeInstance(worksheetConfig.gridSize, worksheetConfig.factors));
+                } else if (count === 1 && generatedWorksheets.length === 0) {
+                    generatedWorksheets = [createMazeInstance(worksheetConfig.gridSize, worksheetConfig.factors)];
+                }
+                updateA4UI();
+            }
+
+            function regenerateWorksheets() {
+                const count = worksheetConfig.boardsPerPage;
+                generatedWorksheets = [];
+                for (let i = 0; i < count; i++) {
+                    generatedWorksheets.push(createMazeInstance(worksheetConfig.gridSize, worksheetConfig.factors));
+                }
+            }
+
+            function getA4CellTypographyClass(size, isDouble) {
+                if (isDouble) {
+                    if (size <= 5) return 'text-base sm:text-lg';
+                    if (size === 6) return 'text-sm sm:text-base';
+                    if (size === 8) return 'text-xs sm:text-sm';
+                    if (size === 10) return 'text-[10px] sm:text-xs';
+                    return 'text-[9px] sm:text-[10px]';
+                } else {
+                    if (size <= 5) return 'text-2xl sm:text-3xl';
+                    if (size === 6) return 'text-xl sm:text-2xl';
+                    if (size === 8) return 'text-base sm:text-xl';
+                    if (size === 10) return 'text-sm sm:text-base';
+                    return 'text-xs sm:text-sm';
+                }
+            }
+
+            function buildSingleMazeCardHTML(maze, cardIndex, isAnswerKey) {
+                const size = worksheetConfig.gridSize;
+                const factors = worksheetConfig.factors;
+                const isDual = factors.length === 2;
+                const isDouble = worksheetConfig.boardsPerPage === 2;
+                const c1 = trackColors[0];
+                const c2 = trackColors[1];
+
+                const cellFontClass = getA4CellTypographyClass(size, isDouble);
+                const boardWidthClass = isDouble
+                    ? 'a4-board-double w-[240px] sm:w-[270px]'
+                    : 'a4-board-single w-[340px] sm:w-[430px]';
+
+                const edgeOffsetPct = (50 / size).toFixed(2);
+                const arrowSize = isDouble ? 'w-4 h-4' : 'w-6 h-6';
+                const arrowWrapperPad = isDouble ? 'px-5' : 'px-8';
+
+                const factorBadges = isDual
+                    ? `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-white font-bold border border-slate-800 text-xs" style="background:${c1.main}">×${factors[0]}</span>
+                       <span class="text-slate-400 font-bold text-xs">i</span>
+                       <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-white font-bold border border-slate-800 text-xs" style="background:${c2.main}">×${factors[1]}</span>`
+                    : `<span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-white font-bold border border-slate-800 text-xs" style="background:${c1.main}">×${factors[0]}</span>`;
+
+                const modeLabel = worksheetConfig.players === 2 ? '2 Graczy' : '1 Gracz';
+                const cardTitle = isAnswerKey
+                    ? `Klucz odpowiedzi ${isDouble ? `(${cardIndex === 0 ? 'A' : 'B'})` : ''}`
+                    : `Labirynt wielokrotności ${isDouble ? `(${cardIndex === 0 ? 'A' : 'B'})` : ''}`;
+
+                let cellsHTML = '';
+                for (let r = 0; r < size; r++) {
+                    for (let c = 0; c < size; c++) {
+                        let inlineStyle = '';
+                        if (isAnswerKey) {
+                            const in1 = maze.solutionPath1.some(p => p.r === r && p.c === c);
+                            const in2 = isDual && maze.solutionPath2.some(p => p.r === r && p.c === c);
+                            if (in1 && in2) {
+                                inlineStyle = `background: linear-gradient(135deg, ${c1.soft} 50%, ${c2.soft} 50%); box-shadow: inset 0 0 0 2.5px ${c1.main}; color: #0f172a;`;
+                            } else if (in1) {
+                                inlineStyle = `background-color: ${c1.soft}; box-shadow: inset 0 0 0 2.5px ${c1.main}; color: ${c1.dark};`;
+                            } else if (in2) {
+                                inlineStyle = `background-color: ${c2.soft}; box-shadow: inset 0 0 0 2.5px ${c2.main}; color: ${c2.dark};`;
+                            }
+                        }
+                        cellsHTML += `<div class="a4-maze-cell ${cellFontClass}" style="${inlineStyle}">${maze.gridData[r][c]}</div>`;
+                    }
+                }
+
+                const headerSection = isAnswerKey
+                    ? `<div class="flex items-center justify-between gap-2 pb-1.5 border-b border-slate-300">
+                           <div class="flex items-center gap-2 flex-wrap">
+                               <span class="font-bold text-slate-800 ${isDouble ? 'text-xs sm:text-sm' : 'text-base sm:text-lg'}">${cardTitle}</span>
+                               <span class="text-[11px] font-semibold text-slate-500">${size}×${size} · ${modeLabel}</span>
+                           </div>
+                           <div class="flex items-center gap-1.5">${factorBadges}</div>
+                       </div>`
+                    : `<div class="flex flex-col gap-1.5 pb-1.5 border-b border-slate-300">
+                           <div class="flex items-center justify-between gap-2 flex-wrap">
+                               <div class="flex items-center gap-2">
+                                   <span class="font-bold text-slate-800 ${isDouble ? 'text-xs sm:text-sm' : 'text-base sm:text-lg'}">${cardTitle}</span>
+                                   <span class="text-[11px] font-semibold text-slate-500">${size}×${size} · ${modeLabel}</span>
+                               </div>
+                               <div class="flex items-center gap-1.5">${factorBadges}</div>
+                           </div>
+                           <div class="flex items-center justify-between gap-4 text-[11px] sm:text-xs text-slate-700 pt-0.5">
+                               <div class="flex-1 flex items-end gap-1.5">
+                                   <span class="font-semibold whitespace-nowrap">Imię i nazwisko:</span>
+                                   <span class="flex-1 border-b border-slate-400 h-3.5"></span>
+                               </div>
+                               <div class="w-28 sm:w-36 flex items-end gap-1.5">
+                                   <span class="font-semibold whitespace-nowrap">Data:</span>
+                                   <span class="flex-1 border-b border-slate-400 h-3.5"></span>
+                               </div>
+                           </div>
+                       </div>`;
+
+                const instructionLine = isAnswerKey
+                    ? ''
+                    : `<div class="text-center text-[10px] sm:text-[11px] text-slate-600 mt-1">
+                           Połącz sąsiadujące krawędziami pola od strzałki <strong>START</strong> do <strong>META</strong> (bez ruchów na skos).
+                       </div>`;
+
+                return `
+                    <div class="flex flex-col items-center w-full ${isDouble ? 'gap-1' : 'gap-2.5'}">
+                        <div class="w-full">${headerSection}</div>
+                        <div class="flex flex-col items-center justify-center w-full">
+                            ${isDual ? `
+                            <div class="${boardWidthClass} flex justify-end ${isDouble ? 'h-4' : 'h-6'} items-end">
+                                <div class="flex items-center gap-0.5" style="margin-right: calc(${edgeOffsetPct}% - 8px); color: ${c2.main};">
+                                    <span class="text-[9px] font-bold uppercase text-slate-700">Start 2</span>
+                                    <svg class="${arrowSize}" viewBox="0 0 24 24" fill="currentColor" stroke="#1e293b" stroke-width="1.5"><path d="M9 4h6v10h4l-7 7-7-7h4V4z"/></svg>
+                                </div>
+                            </div>` : ''}
+                            <div class="relative flex items-center justify-center ${arrowWrapperPad}">
+                                <div class="absolute left-0 -translate-y-1/2 flex flex-col items-center" style="top: ${edgeOffsetPct}%; color: ${c1.main};">
+                                    <span class="text-[8px] font-bold uppercase text-slate-700 leading-none mb-0.5">Start</span>
+                                    <svg class="${arrowSize}" viewBox="0 0 24 24" fill="currentColor" stroke="#1e293b" stroke-width="1.5"><path d="M4 9h10V5l7 7-7 7v-4H4V9z"/></svg>
+                                </div>
+                                <div class="a4-maze-grid ${boardWidthClass}" style="grid-template-columns: repeat(${size}, 1fr);">
+                                    ${cellsHTML}
+                                </div>
+                                <div class="absolute right-0 translate-y-1/2 flex flex-col items-center" style="bottom: ${edgeOffsetPct}%; color: ${c1.main};">
+                                    <span class="text-[8px] font-bold uppercase text-slate-700 leading-none mb-0.5">Meta</span>
+                                    <svg class="${arrowSize}" viewBox="0 0 24 24" fill="currentColor" stroke="#1e293b" stroke-width="1.5"><path d="M4 9h10V5l7 7-7 7v-4H4V9z"/></svg>
+                                </div>
+                            </div>
+                            ${isDual ? `
+                            <div class="${boardWidthClass} flex justify-start ${isDouble ? 'h-4' : 'h-6'} items-start">
+                                <div class="flex items-center gap-0.5" style="margin-left: calc(${edgeOffsetPct}% - 8px); color: ${c2.main};">
+                                    <svg class="${arrowSize}" viewBox="0 0 24 24" fill="currentColor" stroke="#1e293b" stroke-width="1.5"><path d="M9 4h6v10h4l-7 7-7-7h4V4z"/></svg>
+                                    <span class="text-[9px] font-bold uppercase text-slate-700">Meta 2</span>
+                                </div>
+                            </div>` : ''}
+                        </div>
+                        ${instructionLine}
+                    </div>
+                `;
+            }
+
+            function buildA4SheetHTML(isAnswerKey) {
+                const isDouble = worksheetConfig.boardsPerPage === 2;
+                if (!isDouble) {
+                    return `
+                        <div class="a4-sheet">
+                            <div class="flex-1 flex flex-col justify-center">
+                                ${buildSingleMazeCardHTML(generatedWorksheets[0], 0, isAnswerKey)}
+                            </div>
+                            <div class="text-center text-[10px] text-slate-400 pt-2 border-t border-slate-200">
+                                Labirynt Tabliczki Mnożenia · Karta pracy A4 ${isAnswerKey ? '· Klucz odpowiedzi' : ''}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="a4-sheet">
+                            <div class="flex-1 flex flex-col justify-center">
+                                ${buildSingleMazeCardHTML(generatedWorksheets[0], 0, isAnswerKey)}
+                            </div>
+                            <div class="w-full flex items-center gap-2 my-1 text-slate-400">
+                                <span class="text-xs leading-none">✂</span>
+                                <div class="flex-1 border-t border-dashed border-slate-400"></div>
+                            </div>
+                            <div class="flex-1 flex flex-col justify-center">
+                                ${buildSingleMazeCardHTML(generatedWorksheets[1], 1, isAnswerKey)}
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            function renderA4Sheets() {
+                const previewContainer = document.getElementById('a4-preview-container');
+                const printRoot = document.getElementById('print-root');
+
+                const page1HTML = buildA4SheetHTML(false);
+                const page2HTML = worksheetConfig.includeAnswerKey ? buildA4SheetHTML(true) : '';
+
+                printRoot.innerHTML = page1HTML + page2HTML;
+
+                let previewHTML = `
+                    <div class="w-full max-w-[680px] flex flex-col items-center gap-2">
+                        <div class="text-xs font-bold uppercase tracking-wider text-slate-600 self-start">Strona 1 — Karta pracy A4</div>
+                        ${page1HTML}
+                    </div>
+                `;
+                if (worksheetConfig.includeAnswerKey) {
+                    previewHTML += `
+                        <div class="w-full max-w-[680px] flex flex-col items-center gap-2">
+                            <div class="text-xs font-bold uppercase tracking-wider text-indigo-700 self-start">Strona 2 — Klucz odpowiedzi</div>
+                            ${page2HTML}
+                        </div>
+                    `;
+                }
+                previewContainer.innerHTML = previewHTML;
+            }
+
+            function updateA4UI() {
+                const p1Btn = document.getElementById('a4-players-1');
+                const p2Btn = document.getElementById('a4-players-2');
+                if (worksheetConfig.players === 1) {
+                    p1Btn.className = 'py-2 px-2.5 rounded-xl font-bold text-xs sm:text-sm bg-indigo-600 text-white shadow-sm transition-all';
+                    p2Btn.className = 'py-2 px-2.5 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all';
+                    document.getElementById('a4-factors-hint').textContent = '1 lub 2 mnożniki';
+                } else {
+                    p2Btn.className = 'py-2 px-2.5 rounded-xl font-bold text-xs sm:text-sm bg-indigo-600 text-white shadow-sm transition-all';
+                    p1Btn.className = 'py-2 px-2.5 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all';
+                    document.getElementById('a4-factors-hint').textContent = 'Wymagane 2 mnożniki';
+                }
+
+                document.querySelectorAll('.a4-size-btn').forEach(btn => {
+                    if (parseInt(btn.dataset.a4Size) === worksheetConfig.gridSize) {
+                        btn.className = 'a4-size-btn py-1.5 px-2 rounded-xl font-bold text-xs sm:text-sm bg-indigo-600 text-white shadow-sm transition-all';
+                    } else {
+                        btn.className = 'a4-size-btn py-1.5 px-2 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all';
+                    }
+                });
+
+                const c1 = trackColors[0];
+                const c2 = trackColors[1];
+                document.querySelectorAll('.a4-factor-btn').forEach(btn => {
+                    const val = parseInt(btn.dataset.a4Factor);
+                    btn.classList.remove('active-selected');
+                    btn.style.background = '';
+                    btn.style.borderColor = '';
+                    btn.style.boxShadow = '';
+
+                    if (worksheetConfig.factors[0] === val) {
+                        btn.classList.add('active-selected');
+                        btn.style.background = c1.main;
+                        btn.style.borderColor = c1.dark;
+                        btn.style.boxShadow = `0 4px 10px ${c1.main}44`;
+                    } else if (worksheetConfig.factors[1] === val) {
+                        btn.classList.add('active-selected');
+                        btn.style.background = c2.main;
+                        btn.style.borderColor = c2.dark;
+                        btn.style.boxShadow = `0 4px 10px ${c2.main}44`;
+                    }
+                });
+
+                const b1Btn = document.getElementById('a4-boards-1');
+                const b2Btn = document.getElementById('a4-boards-2');
+                if (worksheetConfig.boardsPerPage === 1) {
+                    b1Btn.className = 'py-2 px-2 rounded-xl font-bold text-xs sm:text-sm bg-indigo-600 text-white shadow-sm transition-all';
+                    b2Btn.className = 'py-2 px-2 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all';
+                    document.getElementById('a4-boards-note').textContent = 'Duża plansza z miejscem na imię i datę.';
+                } else {
+                    b2Btn.className = 'py-2 px-2 rounded-xl font-bold text-xs sm:text-sm bg-indigo-600 text-white shadow-sm transition-all';
+                    b1Btn.className = 'py-2 px-2 rounded-xl font-bold text-xs sm:text-sm bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all';
+                    document.getElementById('a4-boards-note').textContent = 'Dwa różne losowe labirynty z miejscem na imię i linią cięcia.';
+                }
+
+                document.getElementById('a4-include-key').checked = worksheetConfig.includeAnswerKey;
+                renderA4Sheets();
+            }
+
+            function openA4GeneratorModal() {
+                playSound('click');
+                wasGameActiveBeforeA4 = isGameActive;
+                if (isGameActive) {
+                    pauseTimer();
+                }
+
+                worksheetConfig.players = isTwoPlayerMode ? 2 : 1;
+                worksheetConfig.gridSize = gridSize;
+                worksheetConfig.factors = [...selectedFactors];
+                if (worksheetConfig.players === 2 && worksheetConfig.factors.length < 2) {
+                    worksheetConfig.factors.push(worksheetConfig.factors[0] === 4 ? 6 : 4);
+                }
+
+                regenerateWorksheets();
+                updateA4UI();
+                document.getElementById('a4-modal').classList.remove('hidden');
+            }
+
+            function closeA4GeneratorModal() {
+                playSound('click');
+                document.getElementById('a4-modal').classList.add('hidden');
+                if (wasGameActiveBeforeA4 && isGameActive) {
+                    resumeTimer();
+                }
+                wasGameActiveBeforeA4 = false;
+            }
+
+            document.getElementById('btn-open-a4-setup').addEventListener('click', openA4GeneratorModal);
+            document.getElementById('btn-open-a4-game').addEventListener('click', openA4GeneratorModal);
+            document.getElementById('btn-a4-close-x').addEventListener('click', closeA4GeneratorModal);
+
+            document.getElementById('a4-players-1').addEventListener('click', () => { playSound('click'); setA4Players(1); });
+            document.getElementById('a4-players-2').addEventListener('click', () => { playSound('click'); setA4Players(2); });
+
+            document.querySelectorAll('.a4-size-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    playSound('click');
+                    setA4GridSize(parseInt(btn.dataset.a4Size));
+                });
+            });
+
+            document.getElementById('a4-boards-1').addEventListener('click', () => { playSound('click'); setA4BoardsPerPage(1); });
+            document.getElementById('a4-boards-2').addEventListener('click', () => { playSound('click'); setA4BoardsPerPage(2); });
+
+            document.getElementById('a4-include-key').addEventListener('change', (e) => {
+                playSound('click');
+                worksheetConfig.includeAnswerKey = e.target.checked;
+                renderA4Sheets();
+            });
+
+            document.getElementById('btn-a4-regenerate').addEventListener('click', () => {
+                playSound('click');
+                regenerateWorksheets();
+                renderA4Sheets();
+            });
+
+            document.getElementById('btn-a4-print').addEventListener('click', () => {
+                playSound('click');
+                renderA4Sheets();
+                window.print();
+            });
 
         </script>
     </body>
