@@ -128,13 +128,9 @@
             /* Arkusze i wydruk A4 */
             .a4-sheet {
                 background: #ffffff;
-                width: 100%;
-                max-width: 680px;
-                aspect-ratio: 210 / 297;
-                padding: 20px 24px;
-                border-radius: 12px;
-                border: 1px solid #cbd5e1;
-                box-shadow: 0 12px 32px rgba(15, 23, 42, 0.14);
+                width: 190mm;
+                height: 276mm;
+                padding: 3mm;
                 display: flex;
                 flex-direction: column;
                 justify-content: space-between;
@@ -144,11 +140,17 @@
                 print-color-adjust: exact;
             }
 
+            .a4-preview-frame .a4-sheet {
+                border-radius: 6px;
+                border: 1px solid #cbd5e1;
+                box-shadow: 0 12px 32px rgba(15, 23, 42, 0.14);
+            }
+
             .a4-maze-grid {
                 display: grid;
                 border: 1.5px solid #475569;
                 background-color: #ffffff;
-                border-radius: 5px;
+                border-radius: 4px;
                 overflow: hidden;
             }
 
@@ -162,6 +164,14 @@
                 color: #475569;
                 line-height: 1;
                 font-variant-numeric: tabular-nums;
+            }
+
+            .a4-thin-cut-v {
+                border-left: 0.5px solid #cbd5e1;
+            }
+
+            .a4-thin-cut-h {
+                border-top: 0.5px solid #cbd5e1;
             }
 
             @page {
@@ -189,8 +199,7 @@
                     height: 276mm !important;
                     max-width: none !important;
                     max-height: 276mm !important;
-                    aspect-ratio: auto !important;
-                    padding: 2mm 2mm !important;
+                    padding: 2mm !important;
                     margin: 0 !important;
                     border: none !important;
                     border-radius: 0 !important;
@@ -201,18 +210,6 @@
                 .a4-sheet:last-child {
                     page-break-after: auto;
                     break-after: auto;
-                }
-                .a4-board-single {
-                    width: 126mm !important;
-                    max-width: 126mm !important;
-                }
-                .a4-board-double {
-                    width: 80mm !important;
-                    max-width: 80mm !important;
-                }
-                .a4-board-quad {
-                    width: 52mm !important;
-                    max-width: 52mm !important;
                 }
             }
         </style>
@@ -511,12 +508,25 @@
                 </div>
 
                 <!-- Zawartość: Konfiguracja (lewa) + Podgląd A4 (prawa) -->
-                <div class="flex-1 overflow-y-auto grid grid-cols-1 lg:grid-cols-[370px_1fr]">
+                <div class="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[370px_1fr]">
                     <!-- Panel Pytań Konfiguracyjnych -->
-                    <div class="p-4 sm:p-5 bg-slate-50 border-b lg:border-b-0 lg:border-r border-slate-200 flex flex-col gap-4">
+                    <div class="p-4 sm:p-5 bg-slate-50 border-b lg:border-b-0 lg:border-r border-slate-200 flex flex-col gap-3 overflow-y-auto">
+                        <!-- Typ kart pracy -->
+                        <div class="bg-white border border-slate-200 rounded-2xl p-3">
+                            <div class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Typ karty pracy</div>
+                            <div class="grid grid-cols-2 gap-1.5">
+                                <button id="a4-type-filled" type="button" class="py-2 px-2 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow-sm transition-all">
+                                    Z liczbami (labirynt)
+                                </button>
+                                <button id="a4-type-blank" type="button" class="py-2 px-2 rounded-xl font-bold text-xs bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all">
+                                    Puste (bez liczb)
+                                </button>
+                            </div>
+                        </div>
+
                         <!-- 1. Dla ilu graczy -->
                         <div class="bg-white border border-slate-200 rounded-2xl p-3">
-                            <div class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">1. Dla ilu graczy?</div>
+                            <div class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">1. Dla ilu graczy (trasy)?</div>
                             <div class="grid grid-cols-2 gap-1.5">
                                 <button id="a4-players-1" type="button" class="py-2 px-2.5 rounded-xl font-bold text-xs sm:text-sm bg-indigo-600 text-white shadow-sm transition-all">
                                     👤 1 Gracz
@@ -541,7 +551,7 @@
                         </div>
 
                         <!-- 3. Jakie liczby i zakres -->
-                        <div class="bg-white border border-slate-200 rounded-2xl p-3 flex flex-col gap-3">
+                        <div id="a4-numbers-section" class="bg-white border border-slate-200 rounded-2xl p-3 flex flex-col gap-3">
                             <div>
                                 <div class="flex items-center justify-between mb-2">
                                     <span class="text-xs font-bold uppercase tracking-wider text-slate-500">3. Jakie liczby?</span>
@@ -574,40 +584,55 @@
                             </div>
                         </div>
 
-                        <!-- 4. Czy 1, 2 czy 4 plansze na stronę A4 -->
-                        <div class="bg-white border border-slate-200 rounded-2xl p-3">
-                            <div class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">4. Plansze na stronie A4?</div>
+                        <!-- 4. Liczba plansz na stronie A4 oraz wypełnienie -->
+                        <div class="bg-white border border-slate-200 rounded-2xl p-3 flex flex-col gap-2">
+                            <div class="text-xs font-bold uppercase tracking-wider text-slate-500">4. Plansze na stronie A4?</div>
                             <div class="grid grid-cols-3 gap-1.5">
-                                <button id="a4-boards-1" type="button" class="py-2 px-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow-sm transition-all">
-                                    1 plansza
-                                </button>
-                                <button id="a4-boards-2" type="button" class="py-2 px-1.5 rounded-xl font-bold text-xs bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all">
-                                    2 plansze
-                                </button>
-                                <button id="a4-boards-4" type="button" class="py-2 px-1.5 rounded-xl font-bold text-xs bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all">
-                                    4 plansze
-                                </button>
+                                <button id="a4-boards-1" type="button" class="py-2 px-1.5 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow-sm transition-all">1 plansza</button>
+                                <button id="a4-boards-2" type="button" class="py-2 px-1.5 rounded-xl font-bold text-xs bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all">2 plansze</button>
+                                <button id="a4-boards-4" type="button" class="py-2 px-1.5 rounded-xl font-bold text-xs bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all">4 plansze</button>
                             </div>
-                            <p id="a4-boards-note" class="text-[11px] text-slate-500 mt-1.5">Jedna duża plansza na stronę A4.</p>
+                            <div class="grid grid-cols-2 gap-1.5">
+                                <button id="a4-boards-6" type="button" class="py-2 px-1.5 rounded-xl font-bold text-xs bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all">6 małych (czyste)</button>
+                                <button id="a4-boards-8" type="button" class="py-2 px-1.5 rounded-xl font-bold text-xs bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all">8 małych (czyste)</button>
+                            </div>
+                            <button id="a4-btn-fill-wide" type="button" class="w-full py-2 px-3 rounded-xl font-bold text-xs bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200 transition-all flex items-center justify-center gap-1.5">
+                                ↔️ Wypełnij przestrzeń jak najszerzej
+                            </button>
+                            <p id="a4-boards-note" class="text-[11px] text-slate-500">Jedna duża plansza na stronę A4.</p>
                         </div>
 
-                        <!-- Opcje dodatkowe: Imię/data oraz Klucz odpowiedzi -->
+                        <!-- Opcje dodatkowe: Gwiazdki trudności, Imię/data, Klucz odpowiedzi -->
                         <div class="flex flex-col gap-2">
-                            <label class="bg-white border border-slate-200 rounded-2xl p-3 flex items-center gap-3 cursor-pointer hover:bg-slate-50 transition-colors">
+                            <label id="a4-stars-row" class="bg-white border border-slate-200 rounded-2xl p-3 flex items-center gap-3 cursor-pointer hover:bg-slate-50 transition-colors">
+                                <input id="a4-include-stars" type="checkbox" class="w-5 h-5 rounded accent-indigo-600 cursor-pointer shrink-0">
+                                <div class="text-left">
+                                    <div class="text-sm font-bold text-slate-800">Dyskretne gwiazdki trudności</div>
+                                    <div id="a4-stars-hint" class="text-xs text-slate-500">Aktualny poziom: ★★★★☆ (do 200)</div>
+                                </div>
+                            </label>
+
+                            <label id="a4-student-row" class="bg-white border border-slate-200 rounded-2xl p-3 flex items-center gap-3 cursor-pointer hover:bg-slate-50 transition-colors">
                                 <input id="a4-include-student" type="checkbox" class="w-5 h-5 rounded accent-indigo-600 cursor-pointer shrink-0">
                                 <div class="text-left">
                                     <div class="text-sm font-bold text-slate-800">Pole na imię, nazwisko i datę</div>
-                                    <div class="text-xs text-slate-500">Dodaje nagłówek do podpisania karty przez ucznia</div>
+                                    <div class="text-xs text-slate-500">Dodaje nagłówek do podpisania karty</div>
                                 </div>
                             </label>
 
-                            <label class="bg-white border border-slate-200 rounded-2xl p-3 flex items-center gap-3 cursor-pointer hover:bg-slate-50 transition-colors">
-                                <input id="a4-include-key" type="checkbox" class="w-5 h-5 rounded accent-indigo-600 cursor-pointer shrink-0">
-                                <div class="text-left">
-                                    <div class="text-sm font-bold text-slate-800">Dołącz klucz odpowiedzi</div>
-                                    <div class="text-xs text-slate-500">Generuje 2. stronę A4 z zaznaczonymi trasami</div>
+                            <div id="a4-key-wrapper" class="bg-white border border-slate-200 rounded-2xl p-3 flex flex-col gap-2.5">
+                                <label class="flex items-center gap-3 cursor-pointer">
+                                    <input id="a4-include-key" type="checkbox" class="w-5 h-5 rounded accent-indigo-600 cursor-pointer shrink-0">
+                                    <div class="text-left">
+                                        <div class="text-sm font-bold text-slate-800">Dołącz klucz odpowiedzi</div>
+                                        <div class="text-xs text-slate-500">Generuje 2. stronę A4 z rozwiązaniami</div>
+                                    </div>
+                                </label>
+                                <div id="a4-key-type-row" class="hidden grid grid-cols-2 gap-1.5 pt-2 border-t border-slate-100">
+                                    <button id="a4-key-graphic" type="button" class="py-1.5 px-2 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow-sm transition-all">Klucz graficzny</button>
+                                    <button id="a4-key-numeric" type="button" class="py-1.5 px-2 rounded-xl font-bold text-xs bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all">Klucz liczbowy</button>
                                 </div>
-                            </label>
+                            </div>
                         </div>
 
                         <!-- Akcje -->
@@ -621,9 +646,18 @@
                         </div>
                     </div>
 
-                    <!-- Podgląd kartek A4 na żywo -->
-                    <div class="p-4 sm:p-6 bg-slate-200/70 overflow-y-auto flex flex-col items-center gap-6" id="a4-preview-container">
-                        <!-- Generowane przez JS -->
+                    <!-- Strefa podglądu kartek A4 -->
+                    <div class="flex flex-col min-h-0 bg-slate-200/75">
+                        <div class="flex items-center justify-between px-4 py-2 bg-slate-100 border-b border-slate-200 shrink-0">
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Podgląd arkusza A4</span>
+                            <div class="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-slate-200">
+                                <button id="a4-zoom-fit" type="button" class="px-2.5 py-1 rounded-md text-xs font-bold bg-indigo-600 text-white transition-colors">Cała strona</button>
+                                <button id="a4-zoom-full" type="button" class="px-2.5 py-1 rounded-md text-xs font-bold text-slate-600 hover:text-slate-900 transition-colors">Powiększenie 100%</button>
+                            </div>
+                        </div>
+                        <div class="flex-1 p-4 overflow-auto flex flex-col items-center gap-5" id="a4-preview-container">
+                            <!-- Generowane przez JS -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1726,14 +1760,19 @@
 
             // --- GENERATOR KART PRACY A4 ---
             let worksheetConfig = {
+                blankMode: false,
                 players: 1,
                 gridSize: 10,
                 factors: [7],
                 rangeMin: 1,
                 rangeMax: 200,
                 boardsPerPage: 1,
+                fillWide: false,
+                includeDifficultyStars: false,
                 includeStudentFields: false,
-                includeAnswerKey: true
+                includeAnswerKey: false,
+                answerKeyType: 'graphic', // 'graphic' | 'numeric'
+                previewZoom: 'fit'        // 'fit' | 'full'
             };
             let generatedWorksheets = [];
             let wasGameActiveBeforeA4 = false;
@@ -1750,6 +1789,22 @@
                     handleA4FactorSelect(i);
                 });
                 a4FactorButtonsContainer.appendChild(btn);
+            }
+
+            function getDifficultyStarCount(maxVal) {
+                if (maxVal <= 30) return 1;
+                if (maxVal <= 50) return 2;
+                if (maxVal <= 100) return 3;
+                if (maxVal <= 200) return 4;
+                return 5;
+            }
+
+            function buildDifficultyStarsHTML(maxVal, compact = false) {
+                const count = getDifficultyStarCount(maxVal);
+                const filled = '★'.repeat(count);
+                const empty = '☆'.repeat(5 - count);
+                const sizeClass = compact ? 'text-[8px]' : 'text-[10px]';
+                return `<span class="${sizeClass} tracking-[1px] leading-none select-none" title="Poziom trudności: ${count}/5"><span class="text-slate-500">${filled}</span><span class="text-slate-300">${empty}</span></span>`;
             }
 
             function handleA4FactorSelect(num) {
@@ -1806,121 +1861,148 @@
                 }
             }
 
-            function getA4CellTypographyClass(size, boardsCount) {
-                if (boardsCount === 4) {
-                    if (size <= 5) return 'text-sm';
-                    if (size === 6) return 'text-xs';
-                    if (size === 8) return 'text-[10px]';
-                    if (size === 10) return 'text-[8.5px]';
-                    return 'text-[7.5px]';
-                }
+            function getA4BoardWidthMM(boardsCount, fillWide, isDual) {
+                if (boardsCount === 1) return fillWide ? 136 : 120;
                 if (boardsCount === 2) {
-                    if (size <= 5) return 'text-base sm:text-lg';
-                    if (size === 6) return 'text-sm sm:text-base';
-                    if (size === 8) return 'text-xs sm:text-sm';
-                    if (size === 10) return 'text-[10px] sm:text-xs';
-                    return 'text-[9px] sm:text-[10px]';
+                    if (fillWide) return isDual ? 94 : 104;
+                    return 80;
                 }
-                if (size <= 5) return 'text-2xl sm:text-3xl';
-                if (size === 6) return 'text-xl sm:text-2xl';
-                if (size === 8) return 'text-base sm:text-xl';
-                if (size === 10) return 'text-sm sm:text-base';
-                return 'text-xs sm:text-sm';
+                if (boardsCount === 4) return fillWide ? 58 : 52;
+                if (boardsCount === 6) {
+                    if (fillWide) return isDual ? 58 : 60;
+                    return 54;
+                }
+                // boardsCount === 8
+                if (fillWide) return isDual ? 50 : 56;
+                return isDual ? 46 : 52;
+            }
+
+            function getA4CellFontSizePx(size, boardsCount, fillWide) {
+                const boardMM = getA4BoardWidthMM(boardsCount, fillWide, worksheetConfig.players === 2);
+                const cellPx = (boardMM * 3.7795) / size;
+                const ratio = size <= 5 ? 0.44 : (size <= 8 ? 0.48 : 0.50);
+                return Math.max(7.5, Math.min(26, Math.round(cellPx * ratio * 10) / 10));
             }
 
             function buildSingleMazeCardHTML(maze, cardIndex, isAnswerKey) {
                 const size = worksheetConfig.gridSize;
                 const factors = worksheetConfig.factors;
-                const isDual = factors.length === 2;
+                const isBlank = worksheetConfig.blankMode;
+                const isDual = worksheetConfig.players === 2 || (!isBlank && factors.length === 2);
                 const boardsCount = worksheetConfig.boardsPerPage;
-                const isDouble = boardsCount === 2;
-                const isQuad = boardsCount === 4;
+                const isMinimalMany = boardsCount >= 6;
+                const fillWide = worksheetConfig.fillWide;
                 const c1 = trackColors[0];
                 const c2 = trackColors[1];
 
-                const cellFontClass = getA4CellTypographyClass(size, boardsCount);
-                const boardWidthClass = isQuad
-                    ? 'a4-board-quad w-[155px] sm:w-[175px]'
-                    : (isDouble ? 'a4-board-double w-[230px] sm:w-[260px]' : 'a4-board-single w-[320px] sm:w-[400px]');
-
+                const boardMM = getA4BoardWidthMM(boardsCount, fillWide, isDual);
+                const cellFontPx = getA4CellFontSizePx(size, boardsCount, fillWide);
                 const edgeOffsetPct = (50 / size).toFixed(2);
-                const arrowSize = isQuad ? 'w-3 h-3' : (isDouble ? 'w-4 h-4' : 'w-5 h-5');
-                const labelTextClass = isQuad ? 'text-[7px]' : (isDouble ? 'text-[8.5px]' : 'text-[10px]');
-                const arrowWrapperPad = isQuad ? 'px-10' : (isDouble ? 'px-12' : 'px-16');
 
-                const letterLabels = ['A', 'B', 'C', 'D'];
-                const cardSuffix = boardsCount > 1 ? ` (${letterLabels[cardIndex]})` : '';
-                const modeLabel = worksheetConfig.players === 2 ? '2 Graczy' : '1 Gracz';
-                const cardTitle = isAnswerKey
-                    ? `Klucz odpowiedzi${cardSuffix}`
-                    : `Labirynt wielokrotności${cardSuffix}`;
+                const arrowSize = isMinimalMany
+                    ? (boardsCount === 8 ? 'w-3 h-3' : 'w-3.5 h-3.5')
+                    : (boardsCount === 4 ? 'w-3.5 h-3.5' : (boardsCount === 2 ? 'w-4 h-4' : 'w-5 h-5'));
+                const labelTextSize = isMinimalMany ? 'text-[7.5px]' : (boardsCount === 4 ? 'text-[8px]' : (boardsCount === 2 ? 'text-[9px]' : 'text-[11px]'));
+                const arrowPadX = fillWide
+                    ? (isMinimalMany || boardsCount === 4 ? 'px-7' : 'px-10')
+                    : (isMinimalMany || boardsCount === 4 ? 'px-9' : (boardsCount === 2 ? 'px-12' : 'px-16'));
 
                 let cellsHTML = '';
                 for (let r = 0; r < size; r++) {
                     for (let c = 0; c < size; c++) {
-                        let inlineStyle = '';
-                        if (isAnswerKey) {
+                        let inlineStyle = `font-size: ${cellFontPx}px;`;
+                        if (!isBlank && isAnswerKey) {
                             const in1 = maze.solutionPath1.some(p => p.r === r && p.c === c);
                             const in2 = isDual && maze.solutionPath2.some(p => p.r === r && p.c === c);
                             if (in1 && in2) {
-                                inlineStyle = `background: linear-gradient(135deg, ${c1.soft} 50%, ${c2.soft} 50%); box-shadow: inset 0 0 0 2px ${c1.main}; color: #1e293b; font-weight: 700;`;
+                                inlineStyle += `background: linear-gradient(135deg, ${c1.soft} 50%, ${c2.soft} 50%); box-shadow: inset 0 0 0 2px ${c1.main}; color: #1e293b; font-weight: 700;`;
                             } else if (in1) {
-                                inlineStyle = `background-color: ${c1.soft}; box-shadow: inset 0 0 0 2px ${c1.main}; color: ${c1.dark}; font-weight: 700;`;
+                                inlineStyle += `background-color: ${c1.soft}; box-shadow: inset 0 0 0 2px ${c1.main}; color: ${c1.dark}; font-weight: 700;`;
                             } else if (in2) {
-                                inlineStyle = `background-color: ${c2.soft}; box-shadow: inset 0 0 0 2px ${c2.main}; color: ${c2.dark}; font-weight: 700;`;
+                                inlineStyle += `background-color: ${c2.soft}; box-shadow: inset 0 0 0 2px ${c2.main}; color: ${c2.dark}; font-weight: 700;`;
                             }
                         }
-                        cellsHTML += `<div class="a4-maze-cell ${cellFontClass}" style="${inlineStyle}">${maze.gridData[r][c]}</div>`;
+                        const cellVal = isBlank ? '&nbsp;' : maze.gridData[r][c];
+                        cellsHTML += `<div class="a4-maze-cell" style="${inlineStyle}">${cellVal}</div>`;
                     }
                 }
 
-                const studentHeaderRow = (!isAnswerKey && worksheetConfig.includeStudentFields)
-                    ? `<div class="flex items-center justify-between gap-2 ${isQuad ? 'text-[8.5px]' : 'text-[11px]'} text-slate-600 pt-0.5">
-                           <div class="flex-1 flex items-end gap-1">
-                               <span class="font-semibold whitespace-nowrap">${isQuad ? 'Imię:' : 'Imię i nazwisko:'}</span>
-                               <span class="flex-1 border-b border-slate-400 h-2.5"></span>
-                           </div>
-                           <div class="${isQuad ? 'w-14' : 'w-28'} flex items-end gap-1">
-                               <span class="font-semibold whitespace-nowrap">Data:</span>
-                               <span class="flex-1 border-b border-slate-400 h-2.5"></span>
-                           </div>
-                       </div>`
+                const starsHTML = (!isBlank && worksheetConfig.includeDifficultyStars)
+                    ? buildDifficultyStarsHTML(worksheetConfig.rangeMax, isMinimalMany || boardsCount === 4)
                     : '';
 
-                const headerSection = `
-                    <div class="flex flex-col gap-1 pb-1 border-b border-slate-200">
-                        <div class="flex items-center justify-between gap-1.5 flex-wrap">
-                            <span class="font-bold text-slate-700 ${isQuad ? 'text-[10px]' : (isDouble ? 'text-xs' : 'text-sm sm:text-base')}">${cardTitle}</span>
-                            <span class="${isQuad ? 'text-[8.5px]' : 'text-[10px]'} font-semibold text-slate-400">${size}×${size} · ${modeLabel} · ${worksheetConfig.rangeMin}–${worksheetConfig.rangeMax}</span>
+                let headerSection = '';
+                let instructionLine = '';
+
+                if (!isMinimalMany) {
+                    const letterLabels = ['A', 'B', 'C', 'D'];
+                    const cardSuffix = boardsCount > 1 ? ` (${letterLabels[cardIndex]})` : '';
+                    const modeLabel = worksheetConfig.players === 2 ? '2 Graczy' : '1 Gracz';
+                    const cardTitle = isBlank
+                        ? `Plansza labiryntu${cardSuffix}`
+                        : (isAnswerKey ? `Klucz odpowiedzi${cardSuffix}` : `Labirynt wielokrotności${cardSuffix}`);
+                    const metaText = isBlank
+                        ? `${size}×${size} · ${modeLabel}`
+                        : `${size}×${size} · ${modeLabel} · ${worksheetConfig.rangeMin}–${worksheetConfig.rangeMax}`;
+
+                    const studentHeaderRow = (!isAnswerKey && worksheetConfig.includeStudentFields)
+                        ? `<div class="flex items-center justify-between gap-2 ${boardsCount === 4 ? 'text-[9px]' : 'text-[11px]'} text-slate-600 pt-0.5">
+                               <div class="flex-1 flex items-end gap-1">
+                                   <span class="font-semibold whitespace-nowrap">${boardsCount === 4 ? 'Imię:' : 'Imię i nazwisko:'}</span>
+                                   <span class="flex-1 border-b border-slate-400 h-2.5"></span>
+                               </div>
+                               <div class="${boardsCount === 4 ? 'w-16' : 'w-28'} flex items-end gap-1">
+                                   <span class="font-semibold whitespace-nowrap">Data:</span>
+                                   <span class="flex-1 border-b border-slate-400 h-2.5"></span>
+                               </div>
+                           </div>`
+                        : '';
+
+                    headerSection = `
+                        <div class="w-full flex flex-col gap-0.5 pb-1 border-b border-slate-200">
+                            <div class="flex items-center justify-between gap-1.5 flex-wrap">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-slate-700 ${boardsCount === 4 ? 'text-[10.5px]' : (boardsCount === 2 ? 'text-xs' : 'text-sm')}">${cardTitle}</span>
+                                    ${starsHTML}
+                                </div>
+                                <span class="${boardsCount === 4 ? 'text-[8.5px]' : 'text-[10px]'} font-semibold text-slate-400">${metaText}</span>
+                            </div>
+                            ${studentHeaderRow}
                         </div>
-                        ${studentHeaderRow}
-                    </div>
-                `;
+                    `;
 
-                const instructionLine = isAnswerKey
-                    ? ''
-                    : `<div class="text-center ${isQuad ? 'text-[7.5px]' : 'text-[10px]'} text-slate-500 mt-0.5 leading-tight">
-                           Połącz sąsiadujące krawędziami pola od <strong>START</strong> do <strong>META</strong> (bez ruchów na skos).
-                       </div>`;
+                    if (!isAnswerKey && !isBlank) {
+                        instructionLine = `
+                            <div class="text-center ${boardsCount === 4 ? 'text-[8px]' : 'text-[10px]'} text-slate-500 leading-tight">
+                                Połącz sąsiadujące krawędziami pola od <strong>START</strong> do <strong>META</strong> (bez ruchów na skos).
+                            </div>
+                        `;
+                    }
+                } else if (starsHTML) {
+                    headerSection = `<div class="w-full flex justify-end pr-1 -mb-1">${starsHTML}</div>`;
+                }
 
-                const f1Label = `×${factors[0]}`;
-                const f2Label = isDual ? `×${factors[1]}` : '';
+                const start1Label = isBlank ? (isDual ? 'START 1' : 'START') : `START ×${factors[0]}`;
+                const meta1Label = isBlank ? (isDual ? 'META 1' : 'META') : `META ×${factors[0]}`;
+                const start2Label = isBlank ? 'START 2' : `START ×${factors[1] || factors[0]}`;
+                const meta2Label = isBlank ? 'META 2' : `META ×${factors[1] || factors[0]}`;
+                const verticalRowHeight = isMinimalMany ? 'h-3.5' : (boardsCount === 4 ? 'h-4' : 'h-6');
 
                 return `
-                    <div class="flex flex-col items-center w-full ${isQuad ? 'gap-0.5' : (isDouble ? 'gap-1' : 'gap-2')}">
-                        <div class="w-full">${headerSection}</div>
+                    <div class="flex flex-col items-center w-full ${isMinimalMany ? 'gap-0' : (boardsCount === 4 ? 'gap-0.5' : (boardsCount === 2 ? 'gap-1' : 'gap-2'))}">
+                        ${headerSection}
                         <div class="flex flex-col items-center justify-center w-full">
                             ${isDual ? `
-                            <div class="relative ${boardWidthClass} ${isQuad ? 'h-4' : 'h-6'}">
+                            <div class="relative ${verticalRowHeight}" style="width: ${boardMM}mm;">
                                 <div class="absolute bottom-0.5 translate-x-1/2 flex items-center gap-0.5 whitespace-nowrap" style="right: ${edgeOffsetPct}%; color: ${c2.main};">
-                                    <span class="${labelTextClass} font-bold uppercase text-slate-700">START ${f2Label}</span>
+                                    <span class="${labelTextSize} font-bold uppercase text-slate-700">${start2Label}</span>
                                     <svg class="${arrowSize} shrink-0" viewBox="0 0 24 24" fill="currentColor" stroke="#334155" stroke-width="1.5"><path d="M9 4h6v10h4l-7 7-7-7h4V4z"/></svg>
                                 </div>
                             </div>` : ''}
-                            <div class="relative flex items-center justify-center ${arrowWrapperPad}">
-                                <div class="relative ${boardWidthClass}">
+                            <div class="relative flex items-center justify-center ${arrowPadX}">
+                                <div class="relative" style="width: ${boardMM}mm;">
                                     <div class="absolute -translate-y-1/2 flex items-center gap-0.5 whitespace-nowrap" style="right: calc(100% + 4px); top: ${edgeOffsetPct}%; color: ${c1.main};">
-                                        <span class="${labelTextClass} font-bold uppercase text-slate-700">START ${f1Label}</span>
+                                        <span class="${labelTextSize} font-bold uppercase text-slate-700">${start1Label}</span>
                                         <svg class="${arrowSize} shrink-0" viewBox="0 0 24 24" fill="currentColor" stroke="#334155" stroke-width="1.5"><path d="M4 9h10V5l7 7-7 7v-4H4V9z"/></svg>
                                     </div>
                                     <div class="a4-maze-grid w-full" style="grid-template-columns: repeat(${size}, 1fr);">
@@ -1928,19 +2010,107 @@
                                     </div>
                                     <div class="absolute translate-y-1/2 flex items-center gap-0.5 whitespace-nowrap" style="left: calc(100% + 4px); bottom: ${edgeOffsetPct}%; color: ${c1.main};">
                                         <svg class="${arrowSize} shrink-0" viewBox="0 0 24 24" fill="currentColor" stroke="#334155" stroke-width="1.5"><path d="M4 9h10V5l7 7-7 7v-4H4V9z"/></svg>
-                                        <span class="${labelTextClass} font-bold uppercase text-slate-700">META ${f1Label}</span>
+                                        <span class="${labelTextSize} font-bold uppercase text-slate-700">${meta1Label}</span>
                                     </div>
                                 </div>
                             </div>
                             ${isDual ? `
-                            <div class="relative ${boardWidthClass} ${isQuad ? 'h-4' : 'h-6'}">
+                            <div class="relative ${verticalRowHeight}" style="width: ${boardMM}mm;">
                                 <div class="absolute top-0.5 -translate-x-1/2 flex items-center gap-0.5 whitespace-nowrap" style="left: ${edgeOffsetPct}%; color: ${c2.main};">
                                     <svg class="${arrowSize} shrink-0" viewBox="0 0 24 24" fill="currentColor" stroke="#334155" stroke-width="1.5"><path d="M9 4h6v10h4l-7 7-7-7h4V4z"/></svg>
-                                    <span class="${labelTextClass} font-bold uppercase text-slate-700">META ${f2Label}</span>
+                                    <span class="${labelTextSize} font-bold uppercase text-slate-700">${meta2Label}</span>
                                 </div>
                             </div>` : ''}
                         </div>
                         ${instructionLine}
+                    </div>
+                `;
+            }
+
+            function buildNumericKeySheetHTML() {
+                const { min: lo, max: hi } = normalizeRange(worksheetConfig.rangeMin, worksheetConfig.rangeMax);
+                const factors = worksheetConfig.factors;
+                const isDual = worksheetConfig.players === 2 || factors.length === 2;
+                const c1 = trackColors[0];
+                const c2 = trackColors[1];
+
+                const getMultiplesList = (factor) => {
+                    const list = [];
+                    const first = Math.ceil(lo / factor) * factor;
+                    for (let v = first; v <= hi; v += factor) {
+                        if (v > 0) list.push(v);
+                    }
+                    if (list.length === 0) list.push(Math.max(factor, first));
+                    return list;
+                };
+
+                const list1 = getMultiplesList(factors[0]);
+                const list2 = isDual ? getMultiplesList(factors[1]) : [];
+                let commonList = [];
+                if (isDual) {
+                    const baseLcm = lcm(factors[0], factors[1]);
+                    const firstC = Math.ceil(lo / baseLcm) * baseLcm;
+                    for (let v = firstC; v <= hi; v += baseLcm) {
+                        if (v > 0) commonList.push(v);
+                    }
+                }
+
+                const letterLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+                const pathSummaries = generatedWorksheets.map((maze, idx) => {
+                    const label = worksheetConfig.boardsPerPage > 1 ? `Plansza ${letterLabels[idx]}` : 'Plansza';
+                    const seq1 = maze.solutionPath1.map(p => maze.gridData[p.r][p.c]).join(', ');
+                    const seq2 = isDual ? maze.solutionPath2.map(p => maze.gridData[p.r][p.c]).join(', ') : '';
+                    return `
+                        <div class="text-[11px] text-slate-600 border-b border-slate-100 pb-1.5">
+                            <span class="font-bold text-slate-800">${label}:</span>
+                            <span>Trasa ×${factors[0]}: <span class="font-medium text-slate-700">${seq1}</span></span>
+                            ${isDual ? `<span class="ml-3">· Trasa ×${factors[1]}: <span class="font-medium text-slate-700">${seq2}</span></span>` : ''}
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="a4-sheet">
+                        <div class="flex flex-col gap-5 p-3">
+                            <div class="flex items-center justify-between border-b border-slate-300 pb-3">
+                                <div>
+                                    <h3 class="text-lg font-bold text-slate-800">Klucz liczbowy — wielokrotności</h3>
+                                    <p class="text-xs text-slate-500">Zakres liczb: ${lo}–${hi} · Siatka: ${worksheetConfig.gridSize}×${worksheetConfig.gridSize} · Liczba plansz: ${worksheetConfig.boardsPerPage}</p>
+                                </div>
+                                ${worksheetConfig.includeDifficultyStars ? buildDifficultyStarsHTML(hi, false) : ''}
+                            </div>
+
+                            <div class="flex flex-col gap-4">
+                                <div class="border border-slate-200 rounded-xl p-4 bg-slate-50/50">
+                                    <div class="text-sm font-bold mb-1.5" style="color: ${c1.dark};">Wielokrotności liczby ${factors[0]} (×${factors[0]})</div>
+                                    <div class="text-sm text-slate-700 leading-relaxed font-medium" style="font-variant-numeric: tabular-nums;">
+                                        ${list1.join(', ')}
+                                    </div>
+                                </div>
+
+                                ${isDual ? `
+                                <div class="border border-slate-200 rounded-xl p-4 bg-slate-50/50">
+                                    <div class="text-sm font-bold mb-1.5" style="color: ${c2.dark};">Wielokrotności liczby ${factors[1]} (×${factors[1]})</div>
+                                    <div class="text-sm text-slate-700 leading-relaxed font-medium" style="font-variant-numeric: tabular-nums;">
+                                        ${list2.join(', ')}
+                                    </div>
+                                </div>
+                                <div class="border border-slate-200 rounded-xl p-4 bg-white">
+                                    <div class="text-sm font-bold text-slate-800 mb-1.5">Wspólne wielokrotności (skrzyżowania tras ×${factors[0]} i ×${factors[1]})</div>
+                                    <div class="text-sm text-slate-700 leading-relaxed font-medium" style="font-variant-numeric: tabular-nums;">
+                                        ${commonList.length > 0 ? commonList.join(', ') : 'Brak wspólnych wielokrotności w zadanym zakresie'}
+                                    </div>
+                                </div>` : ''}
+                            </div>
+
+                            <div class="border-t border-slate-200 pt-3 flex flex-col gap-1.5">
+                                <div class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Przykładowe sekwencje na wygenerowanych planszach</div>
+                                ${pathSummaries}
+                            </div>
+                        </div>
+                        <div class="text-center text-[10px] text-slate-400 pt-2 border-t border-slate-200">
+                            Labirynt Tabliczki Mnożenia · Klucz liczbowy
+                        </div>
                     </div>
                 `;
             }
@@ -1953,7 +2123,7 @@
                             <div class="flex-1 flex flex-col justify-center">
                                 ${buildSingleMazeCardHTML(generatedWorksheets[0], 0, isAnswerKey)}
                             </div>
-                            <div class="text-center text-[10px] text-slate-400 pt-2 border-t border-slate-200">
+                            <div class="text-center text-[10px] text-slate-400 pt-1.5 border-t border-slate-200">
                                 Labirynt Tabliczki Mnożenia · Karta pracy A4 ${isAnswerKey ? '· Klucz odpowiedzi' : ''}
                             </div>
                         </div>
@@ -1965,9 +2135,9 @@
                             <div class="flex-1 flex flex-col justify-center">
                                 ${buildSingleMazeCardHTML(generatedWorksheets[0], 0, isAnswerKey)}
                             </div>
-                            <div class="w-full flex items-center gap-2 my-1 text-slate-400">
-                                <span class="text-xs leading-none">✂</span>
-                                <div class="flex-1 border-t border-dashed border-slate-400"></div>
+                            <div class="w-full flex items-center gap-2 my-0.5 text-slate-400">
+                                <span class="text-[11px] leading-none">✂</span>
+                                <div class="flex-1 border-t border-dashed border-slate-300"></div>
                             </div>
                             <div class="flex-1 flex flex-col justify-center">
                                 ${buildSingleMazeCardHTML(generatedWorksheets[1], 1, isAnswerKey)}
@@ -1975,47 +2145,123 @@
                         </div>
                     `;
                 }
+                if (boardsCount === 4) {
+                    return `
+                        <div class="a4-sheet relative">
+                            <div class="flex-1 grid grid-cols-2 grid-rows-2 gap-x-3 gap-y-2 items-center relative">
+                                <div class="pointer-events-none absolute inset-y-0 left-1/2 -translate-x-1/2 border-l border-dashed border-slate-300"></div>
+                                <div class="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 border-t border-dashed border-slate-300"></div>
+                                <div class="flex flex-col justify-center h-full px-1">${buildSingleMazeCardHTML(generatedWorksheets[0], 0, isAnswerKey)}</div>
+                                <div class="flex flex-col justify-center h-full px-1">${buildSingleMazeCardHTML(generatedWorksheets[1], 1, isAnswerKey)}</div>
+                                <div class="flex flex-col justify-center h-full px-1">${buildSingleMazeCardHTML(generatedWorksheets[2], 2, isAnswerKey)}</div>
+                                <div class="flex flex-col justify-center h-full px-1">${buildSingleMazeCardHTML(generatedWorksheets[3], 3, isAnswerKey)}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+                // 6 lub 8 małych plansz bez napisów/instrukcji, z bardzo cienką linią podziału
+                const rowsCount = boardsCount === 6 ? 3 : 4;
+                const rowLines = Array.from({ length: rowsCount - 1 }, (_, i) => {
+                    const pct = (((i + 1) / rowsCount) * 100).toFixed(4);
+                    return `<div class="pointer-events-none absolute inset-x-0 a4-thin-cut-h" style="top: ${pct}%;"></div>`;
+                }).join('');
+                const gridItems = Array.from({ length: boardsCount }, (_, idx) => {
+                    return `<div class="flex flex-col justify-center items-center h-full px-0.5">${buildSingleMazeCardHTML(generatedWorksheets[idx], idx, isAnswerKey)}</div>`;
+                }).join('');
+
                 return `
-                    <div class="a4-sheet relative">
-                        <div class="flex-1 grid grid-cols-2 grid-rows-2 gap-x-4 gap-y-3 items-center relative">
-                            <div class="pointer-events-none absolute inset-y-0 left-1/2 -translate-x-1/2 border-l border-dashed border-slate-300"></div>
-                            <div class="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 border-t border-dashed border-slate-300"></div>
-                            <div class="flex flex-col justify-center h-full px-1">${buildSingleMazeCardHTML(generatedWorksheets[0], 0, isAnswerKey)}</div>
-                            <div class="flex flex-col justify-center h-full px-1">${buildSingleMazeCardHTML(generatedWorksheets[1], 1, isAnswerKey)}</div>
-                            <div class="flex flex-col justify-center h-full px-1">${buildSingleMazeCardHTML(generatedWorksheets[2], 2, isAnswerKey)}</div>
-                            <div class="flex flex-col justify-center h-full px-1">${buildSingleMazeCardHTML(generatedWorksheets[3], 3, isAnswerKey)}</div>
+                    <div class="a4-sheet relative" style="padding: 1.5mm;">
+                        <div class="flex-1 grid grid-cols-2 items-center relative" style="grid-template-rows: repeat(${rowsCount}, minmax(0, 1fr));">
+                            <div class="pointer-events-none absolute inset-y-0 left-1/2 -translate-x-1/2 a4-thin-cut-v"></div>
+                            ${rowLines}
+                            ${gridItems}
                         </div>
                     </div>
                 `;
+            }
+
+            function applyA4PreviewScale() {
+                const container = document.getElementById('a4-preview-container');
+                if (!container || document.getElementById('a4-modal').classList.contains('hidden')) return;
+
+                const availW = Math.max(240, container.clientWidth - 36);
+                const availH = Math.max(260, container.clientHeight - 58);
+                const sheetW = 718.11;  // 190mm in px
+                const sheetH = 1043.15; // 276mm in px
+
+                let scale = 1;
+                if (worksheetConfig.previewZoom === 'fit') {
+                    scale = Math.min(availW / sheetW, availH / sheetH, 1);
+                } else {
+                    scale = Math.min(availW / sheetW, 1);
+                }
+                scale = Math.max(0.24, scale);
+
+                container.querySelectorAll('.a4-preview-frame').forEach(frame => {
+                    frame.style.width = `${Math.round(sheetW * scale)}px`;
+                    frame.style.height = `${Math.round(sheetH * scale)}px`;
+                    const scaler = frame.querySelector('.a4-preview-scaler');
+                    if (scaler) {
+                        scaler.style.transform = `scale(${scale})`;
+                    }
+                });
             }
 
             function renderA4Sheets() {
                 const previewContainer = document.getElementById('a4-preview-container');
                 const printRoot = document.getElementById('print-root');
 
+                const showKey = !worksheetConfig.blankMode && worksheetConfig.includeAnswerKey;
                 const page1HTML = buildA4SheetHTML(false);
-                const page2HTML = worksheetConfig.includeAnswerKey ? buildA4SheetHTML(true) : '';
+                const page2HTML = showKey
+                    ? (worksheetConfig.answerKeyType === 'numeric' ? buildNumericKeySheetHTML() : buildA4SheetHTML(true))
+                    : '';
 
                 printRoot.innerHTML = page1HTML + page2HTML;
 
                 let previewHTML = `
-                    <div class="w-full max-w-[680px] flex flex-col items-center gap-2">
+                    <div class="flex flex-col items-center gap-1.5">
                         <div class="text-xs font-bold uppercase tracking-wider text-slate-600 self-start">Strona 1 — Karta pracy A4</div>
-                        ${page1HTML}
+                        <div class="a4-preview-frame relative overflow-hidden">
+                            <div class="a4-preview-scaler origin-top-left">${page1HTML}</div>
+                        </div>
                     </div>
                 `;
-                if (worksheetConfig.includeAnswerKey) {
+                if (showKey) {
+                    const keyTitle = worksheetConfig.answerKeyType === 'numeric'
+                        ? 'Strona 2 — Klucz liczbowy'
+                        : 'Strona 2 — Klucz graficzny';
                     previewHTML += `
-                        <div class="w-full max-w-[680px] flex flex-col items-center gap-2">
-                            <div class="text-xs font-bold uppercase tracking-wider text-indigo-700 self-start">Strona 2 — Klucz odpowiedzi</div>
-                            ${page2HTML}
+                        <div class="flex flex-col items-center gap-1.5">
+                            <div class="text-xs font-bold uppercase tracking-wider text-indigo-700 self-start">${keyTitle}</div>
+                            <div class="a4-preview-frame relative overflow-hidden">
+                                <div class="a4-preview-scaler origin-top-left">${page2HTML}</div>
+                            </div>
                         </div>
                     `;
                 }
                 previewContainer.innerHTML = previewHTML;
+                requestAnimationFrame(applyA4PreviewScale);
             }
 
             function updateA4UI() {
+                const isBlank = worksheetConfig.blankMode;
+                const typeFilledBtn = document.getElementById('a4-type-filled');
+                const typeBlankBtn = document.getElementById('a4-type-blank');
+                if (!isBlank) {
+                    typeFilledBtn.className = 'py-2 px-2 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow-sm transition-all';
+                    typeBlankBtn.className = 'py-2 px-2 rounded-xl font-bold text-xs bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all';
+                } else {
+                    typeBlankBtn.className = 'py-2 px-2 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow-sm transition-all';
+                    typeFilledBtn.className = 'py-2 px-2 rounded-xl font-bold text-xs bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 transition-all';
+                }
+
+                document.getElementById('a4-numbers-section').classList.toggle('hidden', isBlank);
+                document.getElementById('a4-stars-row').classList.toggle('hidden', isBlank);
+                document.getElementById('a4-key-wrapper').classList.toggle('hidden', isBlank);
+                document.getElementById('btn-a4-regenerate').classList.toggle('hidden', isBlank);
+                document.getElementById('a4-student-row').classList.toggle('hidden', worksheetConfig.boardsPerPage >= 6);
+
                 const p1Btn = document.getElementById('a4-players-1');
                 const p2Btn = document.getElementById('a4-players-2');
                 if (worksheetConfig.players === 1) {
@@ -2061,10 +2307,15 @@
                 document.getElementById('a4-range-min').value = worksheetConfig.rangeMin;
                 document.getElementById('a4-range-max').value = worksheetConfig.rangeMax;
 
+                const starCount = getDifficultyStarCount(worksheetConfig.rangeMax);
+                document.getElementById('a4-stars-hint').textContent = `Aktualny poziom: ${'★'.repeat(starCount)}${'☆'.repeat(5 - starCount)} (do ${worksheetConfig.rangeMax})`;
+
                 const boardBtns = [
                     { id: 'a4-boards-1', count: 1, note: 'Jedna duża plansza na stronę A4.' },
-                    { id: 'a4-boards-2', count: 2, note: 'Dwa różne losowe labirynty z linią cięcia.' },
-                    { id: 'a4-boards-4', count: 4, note: 'Cztery różne losowe labirynty (układ 2×2 z liniami cięcia).' }
+                    { id: 'a4-boards-2', count: 2, note: 'Dwa różne labirynty z linią cięcia.' },
+                    { id: 'a4-boards-4', count: 4, note: 'Cztery różne labirynty (układ 2×2 z liniami cięcia).' },
+                    { id: 'a4-boards-6', count: 6, note: 'Sześć czystych małych plansz (2×3) z cienką linią podziału.' },
+                    { id: 'a4-boards-8', count: 8, note: 'Osiem czystych małych plansz (2×4) z cienką linią podziału.' }
                 ];
                 boardBtns.forEach(item => {
                     const el = document.getElementById(item.id);
@@ -2076,8 +2327,41 @@
                     }
                 });
 
+                const fillWideBtn = document.getElementById('a4-btn-fill-wide');
+                if (worksheetConfig.fillWide) {
+                    fillWideBtn.className = 'w-full py-2 px-3 rounded-xl font-bold text-xs bg-indigo-50 text-indigo-800 border border-indigo-400 shadow-sm transition-all flex items-center justify-center gap-1.5';
+                    fillWideBtn.textContent = '✓ Maksymalne wypełnienie strony A4';
+                } else {
+                    fillWideBtn.className = 'w-full py-2 px-3 rounded-xl font-bold text-xs bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200 transition-all flex items-center justify-center gap-1.5';
+                    fillWideBtn.textContent = '↔️ Wypełnij przestrzeń jak najszerzej';
+                }
+
+                document.getElementById('a4-include-stars').checked = worksheetConfig.includeDifficultyStars;
                 document.getElementById('a4-include-student').checked = worksheetConfig.includeStudentFields;
                 document.getElementById('a4-include-key').checked = worksheetConfig.includeAnswerKey;
+
+                const keyTypeRow = document.getElementById('a4-key-type-row');
+                keyTypeRow.classList.toggle('hidden', !worksheetConfig.includeAnswerKey);
+                const keyGraphicBtn = document.getElementById('a4-key-graphic');
+                const keyNumericBtn = document.getElementById('a4-key-numeric');
+                if (worksheetConfig.answerKeyType === 'graphic') {
+                    keyGraphicBtn.className = 'py-1.5 px-2 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow-sm transition-all';
+                    keyNumericBtn.className = 'py-1.5 px-2 rounded-xl font-bold text-xs bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all';
+                } else {
+                    keyNumericBtn.className = 'py-1.5 px-2 rounded-xl font-bold text-xs bg-indigo-600 text-white shadow-sm transition-all';
+                    keyGraphicBtn.className = 'py-1.5 px-2 rounded-xl font-bold text-xs bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all';
+                }
+
+                const zoomFitBtn = document.getElementById('a4-zoom-fit');
+                const zoomFullBtn = document.getElementById('a4-zoom-full');
+                if (worksheetConfig.previewZoom === 'fit') {
+                    zoomFitBtn.className = 'px-2.5 py-1 rounded-md text-xs font-bold bg-indigo-600 text-white transition-colors';
+                    zoomFullBtn.className = 'px-2.5 py-1 rounded-md text-xs font-bold text-slate-600 hover:text-slate-900 transition-colors';
+                } else {
+                    zoomFullBtn.className = 'px-2.5 py-1 rounded-md text-xs font-bold bg-indigo-600 text-white transition-colors';
+                    zoomFitBtn.className = 'px-2.5 py-1 rounded-md text-xs font-bold text-slate-600 hover:text-slate-900 transition-colors';
+                }
+
                 renderA4Sheets();
             }
 
@@ -2094,13 +2378,14 @@
                 worksheetConfig.factors = [...selectedFactors];
                 worksheetConfig.rangeMin = rangeMin;
                 worksheetConfig.rangeMax = rangeMax;
+                worksheetConfig.previewZoom = 'fit';
                 if (worksheetConfig.players === 2 && worksheetConfig.factors.length < 2) {
                     worksheetConfig.factors.push(worksheetConfig.factors[0] === 4 ? 6 : 4);
                 }
 
                 regenerateWorksheets();
-                updateA4UI();
                 document.getElementById('a4-modal').classList.remove('hidden');
+                updateA4UI();
             }
 
             function closeA4GeneratorModal() {
@@ -2115,6 +2400,17 @@
             document.getElementById('btn-open-a4-setup').addEventListener('click', openA4GeneratorModal);
             document.getElementById('btn-open-a4-game').addEventListener('click', openA4GeneratorModal);
             document.getElementById('btn-a4-close-x').addEventListener('click', closeA4GeneratorModal);
+
+            document.getElementById('a4-type-filled').addEventListener('click', () => {
+                playSound('click');
+                worksheetConfig.blankMode = false;
+                updateA4UI();
+            });
+            document.getElementById('a4-type-blank').addEventListener('click', () => {
+                playSound('click');
+                worksheetConfig.blankMode = true;
+                updateA4UI();
+            });
 
             document.getElementById('a4-players-1').addEventListener('click', () => { playSound('click'); setA4Players(1); });
             document.getElementById('a4-players-2').addEventListener('click', () => { playSound('click'); setA4Players(2); });
@@ -2136,7 +2432,7 @@
                 a4RangeMinInput.value = worksheetConfig.rangeMin;
                 a4RangeMaxInput.value = worksheetConfig.rangeMax;
                 regenerateWorksheets();
-                renderA4Sheets();
+                updateA4UI();
             }
 
             a4RangeMinInput.addEventListener('change', syncA4RangeFromInputs);
@@ -2151,13 +2447,27 @@
                     a4RangeMinInput.value = minV;
                     a4RangeMaxInput.value = maxV;
                     regenerateWorksheets();
-                    renderA4Sheets();
+                    updateA4UI();
                 });
             });
 
             document.getElementById('a4-boards-1').addEventListener('click', () => { playSound('click'); setA4BoardsPerPage(1); });
             document.getElementById('a4-boards-2').addEventListener('click', () => { playSound('click'); setA4BoardsPerPage(2); });
             document.getElementById('a4-boards-4').addEventListener('click', () => { playSound('click'); setA4BoardsPerPage(4); });
+            document.getElementById('a4-boards-6').addEventListener('click', () => { playSound('click'); setA4BoardsPerPage(6); });
+            document.getElementById('a4-boards-8').addEventListener('click', () => { playSound('click'); setA4BoardsPerPage(8); });
+
+            document.getElementById('a4-btn-fill-wide').addEventListener('click', () => {
+                playSound('click');
+                worksheetConfig.fillWide = !worksheetConfig.fillWide;
+                updateA4UI();
+            });
+
+            document.getElementById('a4-include-stars').addEventListener('change', (e) => {
+                playSound('click');
+                worksheetConfig.includeDifficultyStars = e.target.checked;
+                renderA4Sheets();
+            });
 
             document.getElementById('a4-include-student').addEventListener('change', (e) => {
                 playSound('click');
@@ -2168,8 +2478,36 @@
             document.getElementById('a4-include-key').addEventListener('change', (e) => {
                 playSound('click');
                 worksheetConfig.includeAnswerKey = e.target.checked;
-                renderA4Sheets();
+                updateA4UI();
             });
+
+            document.getElementById('a4-key-graphic').addEventListener('click', () => {
+                playSound('click');
+                worksheetConfig.answerKeyType = 'graphic';
+                updateA4UI();
+            });
+            document.getElementById('a4-key-numeric').addEventListener('click', () => {
+                playSound('click');
+                worksheetConfig.answerKeyType = 'numeric';
+                updateA4UI();
+            });
+
+            document.getElementById('a4-zoom-fit').addEventListener('click', () => {
+                playSound('click');
+                worksheetConfig.previewZoom = 'fit';
+                updateA4UI();
+            });
+            document.getElementById('a4-zoom-full').addEventListener('click', () => {
+                playSound('click');
+                worksheetConfig.previewZoom = 'full';
+                updateA4UI();
+            });
+
+            window.addEventListener('resize', applyA4PreviewScale);
+            if (typeof ResizeObserver !== 'undefined') {
+                const previewResizeObserver = new ResizeObserver(() => applyA4PreviewScale());
+                previewResizeObserver.observe(document.getElementById('a4-preview-container'));
+            }
 
             document.getElementById('btn-a4-regenerate').addEventListener('click', () => {
                 playSound('click');
